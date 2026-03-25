@@ -1,0 +1,386 @@
+/*
+ * AI Governance and Infrastructure Suite — Admin Stylesheet
+ * Loaded on all AIGIS admin pages.
+ */
+
+/* =========================================================================
+   Variables
+   ========================================================================= */
+:root {
+	--aigis-blue:      #2271b1;
+	--aigis-blue-dark: #135e96;
+	--aigis-green:     #00a32a;
+	--aigis-amber:     #dba617;
+	--aigis-red:       #d63638;
+	--aigis-gray-100:  #f6f7f7;
+	--aigis-gray-200:  #dcdcde;
+	--aigis-gray-600:  #646970;
+	--aigis-gray-900:  #1d2327;
+	--aigis-radius:    4px;
+	--aigis-shadow:    0 1px 3px rgba(0,0,0,.12);
+}
+
+/* =========================================================================
+   Layout helpers
+   ========================================================================= */
+.aigis-wrap {
+	margin-top: 16px;
+}
+.aigis-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+.aigis-col {
+	flex: 1 1 220px;
+}
+.aigis-col-2 {
+	flex: 2 1 440px;
+}
+.aigis-col-3 {
+	flex: 3 1 660px;
+}
+
+/* =========================================================================
+   KPI cards
+   ========================================================================= */
+.aigis-kpi-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+.aigis-kpi-card {
+	background: #fff;
+	border: 1px solid var(--aigis-gray-200);
+	border-top: 3px solid var(--aigis-blue);
+	border-radius: var(--aigis-radius);
+	padding: 16px 20px;
+	box-shadow: var(--aigis-shadow);
+}
+.aigis-kpi-card .aigis-kpi-value {
+	font-size: 2rem;
+	font-weight: 700;
+	color: var(--aigis-gray-900);
+	line-height: 1;
+	margin: 4px 0;
+}
+.aigis-kpi-card .aigis-kpi-label {
+	font-size: .8125rem;
+	color: var(--aigis-gray-600);
+	text-transform: uppercase;
+	letter-spacing: .04em;
+}
+.aigis-kpi-card.aigis-kpi-warn { border-top-color: var(--aigis-amber); }
+.aigis-kpi-card.aigis-kpi-error { border-top-color: var(--aigis-red); }
+.aigis-kpi-card.aigis-kpi-success { border-top-color: var(--aigis-green); }
+
+/* =========================================================================
+   Cards / panels
+   ========================================================================= */
+.aigis-card {
+	background: #fff;
+	border: 1px solid var(--aigis-gray-200);
+	border-radius: var(--aigis-radius);
+	box-shadow: var(--aigis-shadow);
+	padding: 20px 24px;
+	margin-bottom: 16px;
+}
+.aigis-card h3 {
+	margin-top: 0;
+	font-size: 1rem;
+	border-bottom: 1px solid var(--aigis-gray-200);
+	padding-bottom: 8px;
+	margin-bottom: 16px;
+}
+.aigis-card-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 12px;
+}
+.aigis-card-header h3 {
+	margin: 0;
+	border: none;
+	padding: 0;
+}
+
+/* =========================================================================
+   Chart containers
+   ========================================================================= */
+.aigis-chart-wrap {
+	position: relative;
+	height: 280px;
+	width: 100%;
+}
+.aigis-chart-wrap.aigis-chart-sm {
+	height: 180px;
+}
+.aigis-chart-wrap.aigis-chart-lg {
+	height: 380px;
+}
+
+/* =========================================================================
+   Tables
+   ========================================================================= */
+.aigis-table-wrap {
+	overflow-x: auto;
+}
+.aigis-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: .875rem;
+}
+.aigis-table thead th {
+	background: var(--aigis-gray-100);
+	border-bottom: 2px solid var(--aigis-gray-200);
+	padding: 10px 12px;
+	text-align: left;
+	font-weight: 600;
+	white-space: nowrap;
+}
+.aigis-table tbody tr:nth-child(even) {
+	background: var(--aigis-gray-100);
+}
+.aigis-table tbody td {
+	padding: 8px 12px;
+	border-bottom: 1px solid var(--aigis-gray-200);
+	vertical-align: middle;
+}
+.aigis-table tbody tr:hover {
+	background: #f0f6fc;
+}
+.aigis-table .column-actions {
+	white-space: nowrap;
+	width: 1%;
+}
+
+/* =========================================================================
+   Status badges
+   ========================================================================= */
+.aigis-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: .75rem;
+	font-weight: 600;
+	line-height: 1.6;
+	text-transform: uppercase;
+	letter-spacing: .03em;
+}
+.aigis-badge-pass,
+.aigis-badge-active,
+.aigis-badge-approved,
+.aigis-badge-resolved { background: #e6f4ea; color: #1a7a34; }
+.aigis-badge-fail,
+.aigis-badge-error,
+.aigis-badge-open     { background: #fce8e8; color: #a31c1f; }
+.aigis-badge-flagged,
+.aigis-badge-warn,
+.aigis-badge-pending  { background: #fef9e2; color: #8a6b00; }
+.aigis-badge-inactive,
+.aigis-badge-retired,
+.aigis-badge-draft    { background: var(--aigis-gray-200); color: var(--aigis-gray-600); }
+.aigis-badge-investigating { background: #e8f0fe; color: #1a56a4; }
+
+/* =========================================================================
+   Progress / budget bars
+   ========================================================================= */
+.aigis-progress {
+	background: var(--aigis-gray-200);
+	border-radius: 10px;
+	height: 8px;
+	overflow: hidden;
+	width: 100%;
+}
+.aigis-progress-bar {
+	height: 100%;
+	border-radius: 10px;
+	background: var(--aigis-blue);
+	transition: width .3s ease;
+}
+.aigis-progress-bar.aigis-warn { background: var(--aigis-amber); }
+.aigis-progress-bar.aigis-danger { background: var(--aigis-red); }
+
+/* =========================================================================
+   Tabs
+   ========================================================================= */
+.aigis-tabs {
+	display: flex;
+	border-bottom: 2px solid var(--aigis-gray-200);
+	margin-bottom: 20px;
+	gap: 4px;
+}
+.aigis-tab {
+	padding: 8px 16px;
+	border: none;
+	background: none;
+	cursor: pointer;
+	border-bottom: 3px solid transparent;
+	margin-bottom: -2px;
+	font-size: .9375rem;
+	color: var(--aigis-gray-600);
+	text-decoration: none;
+	border-radius: var(--aigis-radius) var(--aigis-radius) 0 0;
+}
+.aigis-tab:hover { color: var(--aigis-blue); background: var(--aigis-gray-100); }
+.aigis-tab.aigis-tab-active {
+	border-bottom-color: var(--aigis-blue);
+	color: var(--aigis-blue);
+	font-weight: 600;
+}
+
+/* =========================================================================
+   Filters / search bar
+   ========================================================================= */
+.aigis-filter-bar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: flex-end;
+	margin-bottom: 16px;
+}
+.aigis-filter-bar label {
+	display: flex;
+	flex-direction: column;
+	font-size: .8125rem;
+	font-weight: 600;
+	gap: 4px;
+}
+.aigis-filter-bar select,
+.aigis-filter-bar input[type="text"],
+.aigis-filter-bar input[type="date"] {
+	min-width: 140px;
+	height: 32px;
+	padding: 0 8px;
+	border: 1px solid var(--aigis-gray-200);
+	border-radius: var(--aigis-radius);
+}
+.aigis-filter-bar .button {
+	height: 32px;
+	line-height: 30px;
+	padding: 0 12px;
+}
+
+/* =========================================================================
+   Sandbox / inline form areas
+   ========================================================================= */
+.aigis-sandbox {
+	background: var(--aigis-gray-100);
+	border: 1px solid var(--aigis-gray-200);
+	border-radius: var(--aigis-radius);
+	padding: 16px;
+}
+.aigis-sandbox textarea {
+	width: 100%;
+	font-family: monospace;
+	font-size: .875rem;
+}
+.aigis-sandbox-output {
+	margin-top: 12px;
+	padding: 10px 12px;
+	background: #fff;
+	border: 1px solid var(--aigis-gray-200);
+	border-radius: var(--aigis-radius);
+	font-family: monospace;
+	font-size: .875rem;
+	white-space: pre-wrap;
+	min-height: 60px;
+	display: none;
+}
+.aigis-sandbox-output.aigis-visible { display: block; }
+.aigis-sandbox-output.aigis-error   { border-color: var(--aigis-red); color: var(--aigis-red); }
+
+/* =========================================================================
+   Workflow diagram panel
+   ========================================================================= */
+.aigis-mermaid-wrap {
+	display: flex;
+	gap: 16px;
+	align-items: flex-start;
+}
+.aigis-mermaid-source {
+	flex: 1;
+}
+.aigis-mermaid-preview {
+	flex: 2;
+	background: #fff;
+	border: 1px solid var(--aigis-gray-200);
+	border-radius: var(--aigis-radius);
+	padding: 16px;
+	min-height: 200px;
+	overflow: auto;
+}
+.aigis-mermaid-preview svg {
+	max-width: 100%;
+}
+
+/* =========================================================================
+   Notification inbox badge
+   ========================================================================= */
+#aigis-inbox-badge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--aigis-red);
+	color: #fff;
+	font-size: .6875rem;
+	font-weight: 700;
+	border-radius: 10px;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 4px;
+	margin-left: 6px;
+	vertical-align: middle;
+}
+#aigis-inbox-badge:empty { display: none; }
+
+/* =========================================================================
+   API key copy field
+   ========================================================================= */
+.aigis-api-key-wrap {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+.aigis-api-key-field {
+	font-family: monospace;
+	letter-spacing: .08em;
+	flex: 1;
+}
+.aigis-copy-btn.aigis-copied {
+	background: var(--aigis-green);
+	border-color: var(--aigis-green);
+	color: #fff;
+}
+
+/* =========================================================================
+   Loading overlay for AJAX actions
+   ========================================================================= */
+.aigis-loading {
+	position: relative;
+	pointer-events: none;
+	opacity: .6;
+}
+.aigis-loading::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="none" stroke="%232271b1" stroke-width="4" stroke-dasharray="28 56" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur=".8s" repeatCount="indefinite"/></circle></svg>') center/40px no-repeat;
+}
+
+/* =========================================================================
+   Inline notices (non-admin-notice)
+   ========================================================================= */
+.aigis-notice {
+	padding: 8px 12px;
+	border-radius: var(--aigis-radius);
+	border-left: 4px solid;
+	margin: 8px 0;
+	font-size: .875rem;
+}
+.aigis-notice-info    { background: #e8f0fe; border-color: var(--aigis-blue);  color: #1a56a4; }
+.aigis-notice-success { background: #e6f4ea; border-color: var(--aigis-green); color: #1a7a34; }
+.aigis-notice-warn    { background: #fef9e2; border-color: var(--aigis-amber); color: #7a5c00; }
+.aigis-notice-error   { background: #fce8e8; border-color: var(--aigis-red);   color: #a31c1f; }

@@ -1,0 +1,48 @@
+# ============================================================
+# AIGIS — AI Governance and Infrastructure Suite for WordPress
+# ============================================================
+
+# --- Internal dev resources ---
+_resources/
+
+# --- Vendor JS (large minified files committed separately) ---
+# Uncomment if you supply vendor files via a build step rather than committing them:
+# admin/js/vendor/
+
+# --- WordPress core / environment files ---
+wp-config.php
+wp-config-local.php
+.env
+.env.*
+
+# --- OS noise ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.code-workspace
+
+# --- Node / build tooling (if added later) ---
+node_modules/
+npm-debug.log*
+yarn-error.log
+dist/
+build/
+
+# --- Composer ---
+vendor/
+composer.lock
+
+# --- PHP ---
+*.log
+error_log
+
+# --- Test artefacts ---
+tests/coverage/
+.phpunit.result.cache
+phpunit.xml.dist.bak
