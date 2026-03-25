@@ -34,16 +34,20 @@ if ( ! array_key_exists( $active_tab, $tabs ) ) {
 	<h1 class="wp-heading-inline"><?php esc_html_e( 'AI Governance Suite — User Manual', 'ai-governance-suite' ); ?></h1>
 	<hr class="wp-header-end">
 
-	<nav class="nav-tab-wrapper aigis-nav-tab-wrapper" style="margin-bottom:0">
+	<div style="display:flex;gap:0;margin-top:1.5rem;align-items:flex-start">
+
+	<nav style="flex:0 0 200px;background:#fff;border:1px solid #c3c4c7;border-radius:4px;padding:8px 0;margin-right:24px;margin-top:20px;">
 		<?php foreach ( $tabs as $slug => $label ) :
 			$url = add_query_arg( [ 'manual_tab' => $slug ] );
-			$cls = $active_tab === $slug ? 'nav-tab nav-tab-active' : 'nav-tab';
+			$is_active = $active_tab === $slug;
 		?>
-			<a href="<?php echo esc_url( $url ); ?>" class="<?php echo esc_attr( $cls ); ?>"><?php echo $label; /* translators: already escaped */ ?></a>
+			<a href="<?php echo esc_url( $url ); ?>" style="display:block;padding:8px 16px;font-size:.875rem;text-decoration:none;border-left:3px solid <?php echo $is_active ? '#2271b1' : 'transparent'; ?>;color:<?php echo $is_active ? '#2271b1' : '#1d2327'; ?>;font-weight:<?php echo $is_active ? '600' : '400'; ?>;background:<?php echo $is_active ? '#f0f6fc' : 'transparent'; ?>">
+				<?php echo $label; /* translators: already escaped */ ?>
+			</a>
 		<?php endforeach; ?>
 	</nav>
 
-	<div class="aigis-manual-body card" style="max-width:960px;padding:2rem 2.5rem;margin-top:1.5rem">
+	<div class="aigis-manual-body card" style="flex:1;min-width:0;max-width:800px;padding:1rem 2rem 2.5rem;">
 
 	<?php // ----------------------------------------------------------------
 	//  OVERVIEW
@@ -504,4 +508,6 @@ X-AIGIS-API-Key: &lt;your-key&gt;
 	<?php endif; ?>
 
 	</div><!-- .aigis-manual-body -->
+
+	</div><!-- .aigis-manual-layout -->
 </div><!-- .aigis-manual -->
