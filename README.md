@@ -1,4 +1,4 @@
-# AIGIS: The AI Governance and Infrastructure Suite for WordPress
+# AIGIS: The AI Governance and Infrastructure Suite
 
 > **⚠️ Beta — Active Development — Testing Phase**  
 > This plugin is in early beta. APIs, database schemas, and admin UI may change between versions without notice. Not recommended for production use yet. Feedback, bug reports, and pull requests are very welcome.
