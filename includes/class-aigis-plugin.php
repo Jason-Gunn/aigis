@@ -24,6 +24,8 @@ class AIGIS_Plugin {
 	 * Initialize all plugin components and register their hooks.
 	 */
 	private function init(): void {
+		AIGIS_Capabilities::register_roles_and_caps();
+
 		// CPTs and taxonomies — create instances then wire hooks via register().
 		( new AIGIS_CPT_Prompt() )->register( $this->loader );
 		( new AIGIS_CPT_Policy() )->register( $this->loader );

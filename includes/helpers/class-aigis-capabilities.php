@@ -69,11 +69,12 @@ class AIGIS_Capabilities {
 		return [
 			'aigis_super_admin' => [
 				'name' => __( 'AI Super Admin', 'ai-governance-suite' ),
-				'caps' => self::all_caps(),
+				'caps' => array_merge( [ 'read' ], self::all_caps() ),
 			],
 			'aigis_ai_manager' => [
 				'name' => __( 'AI Manager', 'ai-governance-suite' ),
 				'caps' => [
+					'read',
 					self::MANAGE_AI_INVENTORY,
 					self::VIEW_AI_INVENTORY,
 					self::MANAGE_PROMPTS,
@@ -98,6 +99,7 @@ class AIGIS_Capabilities {
 			'aigis_ai_developer' => [
 				'name' => __( 'AI Developer', 'ai-governance-suite' ),
 				'caps' => [
+					'read',
 					self::VIEW_AI_INVENTORY,
 					self::MANAGE_PROMPTS,
 					self::USE_PROMPTS,
@@ -114,6 +116,7 @@ class AIGIS_Capabilities {
 			'aigis_ai_reviewer' => [
 				'name' => __( 'AI Reviewer', 'ai-governance-suite' ),
 				'caps' => [
+					'read',
 					self::VIEW_AI_INVENTORY,
 					self::APPROVE_PROMPTS,
 					self::VIEW_POLICIES,

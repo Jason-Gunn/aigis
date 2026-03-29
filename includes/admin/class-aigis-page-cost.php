@@ -22,11 +22,13 @@ class AIGIS_Page_Cost {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'ai-governance-suite' ) );
 		}
 
+		$errors = [];
+
 		if ( ! empty( $_POST['aigis_budget_nonce'] ) ) {
 			$this->handle_save();
 		}
 
-		if ( isset( $_GET['delete_budget'] ) && current_user_can( AIGIS_Capabilities::MANAGE_BUDGETS ) ) {
+		if ( ( $_GET['budget_action'] ?? '' ) === 'delete' && ! empty( $_GET['budget_id'] ) && current_user_can( AIGIS_Capabilities::MANAGE_BUDGETS ) ) {
 			$this->handle_delete();
 		}
 
@@ -65,10 +67,22 @@ class AIGIS_Page_Cost {
 		$allowed_scope_types  = [ 'global', 'department', 'project' ];
 		$allowed_period_types = [ 'monthly', 'custom' ];
 
+		$period_type = in_array( $_POST['period'] ?? '', $allowed_period_types, true ) ? sanitize_text_field( wp_unslash( $_POST['period'] ) ) : 'monthly';
+		$period_start = $period_type === 'custom'
+			? current_time( 'Y-m-d' )
+			: current_time( 'Y-m-01' );
+		$period_end = $period_type === 'custom'
+			? gmdate( 'Y-m-d', strtotime( $period_start . ' +29 days' ) )
+			: current_time( 'Y-m-t' );
+
 		$data = [
+			'label'         => sanitize_text_field( wp_unslash( $_POST['label'] ?? '' ) ),
 			'scope_type'    => in_array( $_POST['scope'] ?? '', $allowed_scope_types, true ) ? sanitize_text_field( $_POST['scope'] ) : 'global',
 			'scope_value'   => sanitize_text_field( wp_unslash( $_POST['scope_value'] ?? '' ) ),
-			'period_type'   => in_array( $_POST['period'] ?? '', $allowed_period_types, true ) ? sanitize_text_field( $_POST['period'] ) : 'monthly',
+			'inventory_id'  => 0,
+			'period_type'   => $period_type,
+			'period_start'  => $period_start,
+			'period_end'    => $period_end,
 			'budget_usd'    => round( (float) ( $_POST['budget_usd'] ?? 0 ), 2 ),
 			'alert_pct_80'  => 1,
 			'alert_pct_100' => 1,
@@ -83,17 +97,26 @@ class AIGIS_Page_Cost {
 			$this->db_cost->insert( $data );
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=aigis-cost&saved=1' ) );
-		exit;
+		$this->finish_request( admin_url( 'admin.php?page=aigis-cost&saved=1' ) );
 	}
 
 	private function handle_delete(): void {
-		$id = absint( $_GET['delete_budget'] );
+		$id = absint( $_GET['budget_id'] ?? 0 );
 		if ( ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ?? '' ), 'aigis_delete_budget_' . $id ) ) {
 			wp_die( esc_html__( 'Nonce verification failed.', 'ai-governance-suite' ) );
 		}
 		$this->db_cost->delete( [ 'id' => $id ] );
-		wp_safe_redirect( admin_url( 'admin.php?page=aigis-cost&deleted=1' ) );
+		$this->finish_request( admin_url( 'admin.php?page=aigis-cost&deleted=1' ) );
+	}
+
+	private function finish_request( string $url ): void {
+		if ( ! headers_sent() ) {
+			wp_safe_redirect( $url );
+			exit;
+		}
+
+		echo '<script>window.location = ' . wp_json_encode( $url ) . ';</script>';
+		echo '<noscript><meta http-equiv="refresh" content="0;url=' . esc_url( $url ) . '"></noscript>';
 		exit;
 	}
 }

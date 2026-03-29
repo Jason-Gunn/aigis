@@ -14,6 +14,7 @@ class AIGIS_CPT_Incident {
 	public function register( AIGIS_Loader $loader ): void {
 		$loader->add_action( 'init', $this, 'register_post_type' );
 		$loader->add_action( 'init', $this, 'register_post_statuses' );
+		$loader->add_action( 'pre_get_posts', $this, 'include_custom_statuses_in_admin_list' );
 		$loader->add_action( 'add_meta_boxes', $this, 'add_metaboxes' );
 		$loader->add_action( 'save_post_aigis_incident', $this, 'save_metaboxes', 10, 2 );
 		$loader->add_filter( 'display_post_states', $this, 'display_post_states', 10, 2 );
@@ -41,11 +42,22 @@ class AIGIS_CPT_Incident {
 			'show_in_menu'    => 'aigis-dashboard',
 			'supports'        => [ 'title', 'editor', 'revisions', 'author', 'custom-fields' ],
 			'capability_type' => 'post',
-			'map_meta_cap'    => true,
+			'map_meta_cap'    => false,
 			'capabilities'    => [
-				'create_posts'  => AIGIS_Capabilities::MANAGE_INCIDENTS,
-				'edit_posts'    => AIGIS_Capabilities::MANAGE_INCIDENTS,
-				'delete_posts'  => AIGIS_Capabilities::MANAGE_INCIDENTS,
+				'create_posts'           => AIGIS_Capabilities::MANAGE_INCIDENTS,
+				'edit_post'              => AIGIS_Capabilities::MANAGE_INCIDENTS,
+				'edit_posts'             => AIGIS_Capabilities::MANAGE_INCIDENTS,
+				'edit_others_posts'      => AIGIS_Capabilities::MANAGE_INCIDENTS,
+				'edit_private_posts'     => AIGIS_Capabilities::MANAGE_INCIDENTS,
+				'edit_published_posts'   => AIGIS_Capabilities::MANAGE_INCIDENTS,
+				'read_post'              => AIGIS_Capabilities::VIEW_INCIDENTS,
+				'read_private_posts'     => AIGIS_Capabilities::MANAGE_INCIDENTS,
+				'delete_post'            => AIGIS_Capabilities::MANAGE_INCIDENTS,
+				'delete_posts'           => AIGIS_Capabilities::MANAGE_INCIDENTS,
+				'delete_private_posts'   => AIGIS_Capabilities::MANAGE_INCIDENTS,
+				'delete_published_posts' => AIGIS_Capabilities::MANAGE_INCIDENTS,
+				'delete_others_posts'    => AIGIS_Capabilities::MANAGE_INCIDENTS,
+				'publish_posts'          => AIGIS_Capabilities::MANAGE_INCIDENTS,
 			],
 			'rewrite'         => false,
 			'query_var'       => false,
@@ -226,5 +238,27 @@ class AIGIS_CPT_Incident {
 			$states[ $status ] = $custom[ $status ];
 		}
 		return $states;
+	}
+
+	public function include_custom_statuses_in_admin_list( WP_Query $query ): void {
+		if ( ! is_admin() || ! $query->is_main_query() ) {
+			return;
+		}
+
+		global $pagenow;
+		if ( $pagenow !== 'edit.php' ) {
+			return;
+		}
+
+		if ( $query->get( 'post_type' ) !== 'aigis_incident' ) {
+			return;
+		}
+
+		$post_status = $query->get( 'post_status' );
+		if ( $post_status && $post_status !== 'all' ) {
+			return;
+		}
+
+		$query->set( 'post_status', [ 'draft', 'publish', 'future', 'pending', 'private', 'aigis-open', 'aigis-investigating', 'aigis-resolved' ] );
 	}
 }

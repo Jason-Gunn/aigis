@@ -18,7 +18,7 @@ wp_nonce_field( 'aigis_save_workflow', 'aigis_workflow_nonce' );
 	<div class="aigis-mermaid-source">
 		<label for="aigis-diagram-source" class="screen-reader-text"><?php esc_html_e( 'Diagram source', 'ai-governance-suite' ); ?></label>
 		<textarea id="aigis-diagram-source" name="aigis_diagram_source" rows="16"
-			style="width:100%;font-family:monospace;font-size:.875rem;resize:vertical;"><?php echo esc_textarea( $diagram_source ); ?></textarea>
+			style="width:100%;font-family:monospace;font-size:.875rem;resize:vertical;color:#1d2327;background:#fff;"><?php echo esc_textarea( $diagram_source ); ?></textarea>
 	</div>
 	<div id="aigis-diagram-preview" class="aigis-mermaid-preview">
 		<p style="color:#646970;font-size:.875rem;"><?php esc_html_e( 'Preview will appear here…', 'ai-governance-suite' ); ?></p>

@@ -60,8 +60,8 @@ class AIGIS_REST_Routing extends AIGIS_REST_Controller {
 					'id'          => $row->id,
 					'vendor_name' => $row->vendor_name,
 					'model_name'  => $row->model_name,
-					'access_type' => $row->access_type,
-					'endpoint_url' => $row->endpoint_url,
+					'access_type' => $row->integration_type,
+					'endpoint_url' => $row->api_endpoint,
 				] : null;
 			}
 			$resolved_nodes[] = [

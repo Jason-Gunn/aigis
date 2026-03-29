@@ -52,7 +52,7 @@ class AIGIS_Admin {
 				'title'  => __( 'Dashboard', 'ai-governance-suite' ),
 				'cap'    => AIGIS_Capabilities::VIEW_AI_INVENTORY,
 				'slug'   => 'aigis-dashboard',
-				'cb'     => [ new AIGIS_Page_Dashboard(), 'render' ],
+				'cb'     => '',
 			],
 			[
 				'parent' => 'aigis-dashboard',
@@ -200,8 +200,7 @@ class AIGIS_Admin {
 		}
 
 		// Mermaid.js — only on workflow edit screens.
-		global $post;
-		if ( isset( $post->post_type ) && $post->post_type === 'aigis_workflow' ) {
+		if ( $this->is_workflow_editor_screen( $hook ) ) {
 			wp_enqueue_script(
 				'mermaid-js',
 				AIGIS_PLUGIN_URL . 'admin/js/vendor/mermaid.min.js',
@@ -383,5 +382,23 @@ class AIGIS_Admin {
 		}
 
 		return false;
+	}
+
+	private function is_workflow_editor_screen( string $hook ): bool {
+		if ( ! in_array( $hook, [ 'post.php', 'post-new.php' ], true ) ) {
+			return false;
+		}
+
+		$post_type = sanitize_key( $_GET['post_type'] ?? '' );
+		if ( '' === $post_type && ! empty( $_GET['post'] ) ) {
+			$post_type = (string) get_post_type( absint( $_GET['post'] ) );
+		}
+
+		global $post;
+		if ( '' === $post_type && isset( $post->post_type ) ) {
+			$post_type = (string) $post->post_type;
+		}
+
+		return $post_type === 'aigis_workflow';
 	}
 }

@@ -16,6 +16,29 @@ class AIGIS_DB_Eval extends AIGIS_DB {
 	}
 
 	/**
+	 * Get recent evaluation results with inventory labels.
+	 *
+	 * @param int $limit  Max results.
+	 * @param int $offset Offset.
+	 * @return array
+	 */
+	public function get_recent_results( int $limit = 50, int $offset = 0 ): array {
+		global $wpdb;
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT er.*, inv.vendor_name, inv.model_name
+				 FROM `{$this->table}` er
+				 LEFT JOIN {$wpdb->prefix}aigis_ai_inventory inv ON inv.id = er.inventory_id
+				 ORDER BY er.submitted_at DESC
+				 LIMIT %d OFFSET %d",
+				$limit,
+				$offset
+			)
+		) ?: [];
+	}
+
+	/**
 	 * Get evaluation results pending human review.
 	 *
 	 * @param int $limit  Max results.
@@ -27,11 +50,11 @@ class AIGIS_DB_Eval extends AIGIS_DB {
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		return $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT er.*, p.post_title AS prompt_title
+				"SELECT er.*, inv.vendor_name, inv.model_name
 				 FROM `{$this->table}` er
-				 LEFT JOIN {$wpdb->posts} p ON p.ID = er.prompt_id
-				 WHERE er.requires_review = 1 AND er.reviewed_at IS NULL
-				 ORDER BY er.created_at ASC
+				 LEFT JOIN {$wpdb->prefix}aigis_ai_inventory inv ON inv.id = er.inventory_id
+				 WHERE er.pass_fail = 'pending-review' AND er.reviewed_at IS NULL
+				 ORDER BY er.submitted_at ASC
 				 LIMIT %d OFFSET %d",
 				$limit, $offset
 			)
@@ -49,12 +72,10 @@ class AIGIS_DB_Eval extends AIGIS_DB {
 	public function get_false_negative_rate( int $prompt_id = 0, int $days = 30 ): float {
 		global $wpdb;
 
-		$where = $prompt_id > 0 ? $wpdb->prepare( 'AND prompt_id = %d', $prompt_id ) : '';
-
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$total = (int) $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM `{$this->table}` WHERE result = 'pass' AND created_at >= DATE_SUB(NOW(), INTERVAL %d DAY) {$where}",
+				"SELECT COUNT(*) FROM `{$this->table}` WHERE submitted_at >= DATE_SUB(NOW(), INTERVAL %d DAY)",
 				$days
 			)
 		);
@@ -66,7 +87,7 @@ class AIGIS_DB_Eval extends AIGIS_DB {
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$false_negatives = (int) $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM `{$this->table}` WHERE result = 'pass' AND human_verdict = 'fail' AND created_at >= DATE_SUB(NOW(), INTERVAL %d DAY) {$where}",
+				"SELECT COUNT(*) FROM `{$this->table}` WHERE false_negative = 1 AND submitted_at >= DATE_SUB(NOW(), INTERVAL %d DAY)",
 				$days
 			)
 		);
@@ -84,25 +105,25 @@ class AIGIS_DB_Eval extends AIGIS_DB {
 	public function get_pass_rate_trend( int $prompt_id = 0, int $days = 30 ): array {
 		global $wpdb;
 
-		$where = $prompt_id > 0 ? $wpdb->prepare( 'AND prompt_id = %d', $prompt_id ) : '';
-
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				"SELECT
-					DATE(created_at) AS `date`,
+					DATE(submitted_at) AS `date`,
 					COUNT(*) AS total,
-					SUM(CASE WHEN result = 'pass' THEN 1 ELSE 0 END) AS passed
+					SUM(CASE WHEN pass_fail = 'pass' THEN 1 ELSE 0 END) AS passed,
+					SUM(CASE WHEN pass_fail = 'fail' THEN 1 ELSE 0 END) AS failed
 				 FROM `{$this->table}`
-				 WHERE created_at >= DATE_SUB(NOW(), INTERVAL %d DAY) {$where}
-				 GROUP BY DATE(created_at)
+				 WHERE submitted_at >= DATE_SUB(NOW(), INTERVAL %d DAY)
+				 GROUP BY DATE(submitted_at)
 				 ORDER BY `date` ASC",
 				$days
 			)
 		) ?: [];
 
 		foreach ( $rows as &$row ) {
-			$row->pass_rate = $row->total > 0 ? round( $row->passed / $row->total, 4 ) : 0.0;
+			$considered     = (int) $row->passed + (int) $row->failed;
+			$row->pass_rate = $considered > 0 ? round( $row->passed / $considered, 4 ) : 0.0;
 		}
 		unset( $row );
 
@@ -110,10 +131,10 @@ class AIGIS_DB_Eval extends AIGIS_DB {
 	}
 
 	/**
-	 * Get overall summary stats — total runs, pass count, fail count, flagged count.
+	 * Get overall summary stats.
 	 *
 	 * @param int $days Look-back window.
-	 * @return object { total: int, passed: int, failed: int, flagged: int }
+	 * @return object { total: int, passed: int, failed: int, pending: int, false_negatives: int }
 	 */
 	public function get_summary_stats( int $days = 30 ): object {
 		global $wpdb;
@@ -122,13 +143,14 @@ class AIGIS_DB_Eval extends AIGIS_DB {
 			$wpdb->prepare(
 				"SELECT
 					COUNT(*) AS total,
-					SUM(CASE WHEN result = 'pass'    THEN 1 ELSE 0 END) AS passed,
-					SUM(CASE WHEN result = 'fail'    THEN 1 ELSE 0 END) AS failed,
-					SUM(CASE WHEN result = 'flagged' THEN 1 ELSE 0 END) AS flagged
+					SUM(CASE WHEN pass_fail = 'pass' THEN 1 ELSE 0 END) AS passed,
+					SUM(CASE WHEN pass_fail = 'fail' THEN 1 ELSE 0 END) AS failed,
+					SUM(CASE WHEN pass_fail = 'pending-review' THEN 1 ELSE 0 END) AS pending,
+					SUM(CASE WHEN false_negative = 1 THEN 1 ELSE 0 END) AS false_negatives
 				 FROM `{$this->table}`
-				 WHERE created_at >= DATE_SUB(NOW(), INTERVAL %d DAY)",
+				 WHERE submitted_at >= DATE_SUB(NOW(), INTERVAL %d DAY)",
 				$days
 			)
-		) ?? (object) [ 'total' => 0, 'passed' => 0, 'failed' => 0, 'flagged' => 0 ];
+		) ?? (object) [ 'total' => 0, 'passed' => 0, 'failed' => 0, 'pending' => 0, 'false_negatives' => 0 ];
 	}
 }

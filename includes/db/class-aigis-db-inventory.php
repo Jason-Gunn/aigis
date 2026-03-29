@@ -29,7 +29,7 @@ class AIGIS_DB_Inventory extends AIGIS_DB {
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		return $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM `{$this->table}` WHERE vendor_name LIKE %s OR model_name LIKE %s OR description LIKE %s ORDER BY vendor_name, model_name LIMIT %d OFFSET %d",
+				"SELECT * FROM `{$this->table}` WHERE vendor_name LIKE %s OR model_name LIKE %s OR agent_identifier LIKE %s ORDER BY vendor_name, model_name LIMIT %d OFFSET %d",
 				$like, $like, $like, $limit, $offset
 			),
 			ARRAY_A
@@ -40,9 +40,10 @@ class AIGIS_DB_Inventory extends AIGIS_DB {
 	 * Get filtered inventory list for the WP_List_Table.
 	 *
 	 * @param array $args {
-	 *   @type string $status      'active'|'deprecated'|'retired'|''
+	 *   @type string $search      Search term against vendor_name, model_name, agent_identifier.
+	 *   @type string $status      'active'|'deprecated'|'under-review'|''
 	 *   @type string $vendor      Vendor name filter.
-	 *   @type string $access_type 'api'|'on-prem'|'custom-agent'|''
+	 *   @type string $access_type 'api-model'|'on-prem'|'custom-agent'|''
 	 *   @type int    $limit       Default 20.
 	 *   @type int    $offset      Default 0.
 	 *   @type string $orderby     Column name. Default 'vendor_name'.
@@ -58,8 +59,16 @@ class AIGIS_DB_Inventory extends AIGIS_DB {
 		$limit      = isset( $args['limit'] )   ? (int) $args['limit']   : 20;
 		$offset     = isset( $args['offset'] )  ? (int) $args['offset']  : 0;
 		$order      = isset( $args['order'] ) && strtoupper( $args['order'] ) === 'DESC' ? 'DESC' : 'ASC';
-		$allowed_cols = [ 'vendor_name', 'model_name', 'status', 'access_type', 'created_at' ];
+		$allowed_cols = [ 'vendor_name', 'model_name', 'status', 'integration_type', 'created_at' ];
 		$orderby      = in_array( $args['orderby'] ?? '', $allowed_cols, true ) ? $args['orderby'] : 'vendor_name';
+
+		if ( ! empty( $args['search'] ) ) {
+			$like         = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+			$conditions[] = '(vendor_name LIKE %s OR model_name LIKE %s OR agent_identifier LIKE %s)';
+			$values[]     = $like;
+			$values[]     = $like;
+			$values[]     = $like;
+		}
 
 		if ( ! empty( $args['status'] ) ) {
 			$conditions[] = 'status = %s';
@@ -70,7 +79,7 @@ class AIGIS_DB_Inventory extends AIGIS_DB {
 			$values[]     = $args['vendor'];
 		}
 		if ( ! empty( $args['access_type'] ) ) {
-			$conditions[] = 'access_type = %s';
+			$conditions[] = 'integration_type = %s';
 			$values[]     = $args['access_type'];
 		}
 
@@ -99,6 +108,14 @@ class AIGIS_DB_Inventory extends AIGIS_DB {
 		$conditions = [];
 		$values     = [];
 
+		if ( ! empty( $args['search'] ) ) {
+			$like         = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+			$conditions[] = '(vendor_name LIKE %s OR model_name LIKE %s OR agent_identifier LIKE %s)';
+			$values[]     = $like;
+			$values[]     = $like;
+			$values[]     = $like;
+		}
+
 		if ( ! empty( $args['status'] ) ) {
 			$conditions[] = 'status = %s';
 			$values[]     = $args['status'];
@@ -108,7 +125,7 @@ class AIGIS_DB_Inventory extends AIGIS_DB {
 			$values[]     = $args['vendor'];
 		}
 		if ( ! empty( $args['access_type'] ) ) {
-			$conditions[] = 'access_type = %s';
+			$conditions[] = 'integration_type = %s';
 			$values[]     = $args['access_type'];
 		}
 

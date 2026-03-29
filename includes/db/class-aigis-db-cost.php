@@ -84,12 +84,12 @@ class AIGIS_DB_Cost extends AIGIS_DB {
 		$overages = [];
 
 		foreach ( $budgets as $budget ) {
-			$actual    = $this->get_actual_spend( $budget->scope_type, $budget->scope_value ?? '', $budget->period_type );
-			$pct       = $budget->budget_usd > 0 ? ( $actual / $budget->budget_usd ) * 100 : 0;
-			$threshold = $budget->alert_pct_80 ? 80 : ( $budget->alert_pct_100 ? 100 : 101 );
+			$actual    = $this->get_actual_spend( $budget['scope_type'], $budget['scope_value'] ?? '', $budget['period_type'] );
+			$pct       = $budget['budget_usd'] > 0 ? ( $actual / $budget['budget_usd'] ) * 100 : 0;
+			$threshold = ! empty( $budget['alert_pct_80'] ) ? 80 : ( ! empty( $budget['alert_pct_100'] ) ? 100 : 101 );
 
 			if ( $pct >= $threshold ) {
-				$row                 = (array) $budget;
+				$row                 = $budget;
 				$row['actual_spend'] = $actual;
 				$row['pct_used']     = round( $pct, 1 );
 				$overages[]          = $row;

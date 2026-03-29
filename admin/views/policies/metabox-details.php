@@ -7,7 +7,7 @@
  * @package AI_Governance_Suite
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
-wp_nonce_field( 'aigis_save_policy_details', 'aigis_policy_details_nonce' );
+wp_nonce_field( 'aigis_policy_details', 'aigis_policy_details_nonce' );
 ?>
 <table class="form-table" role="presentation">
 	<tr>

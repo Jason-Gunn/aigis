@@ -38,11 +38,22 @@ class AIGIS_CPT_Workflow {
 			'show_in_menu'    => 'aigis-dashboard',
 			'supports'        => [ 'title', 'editor', 'revisions', 'author', 'custom-fields' ],
 			'capability_type' => 'post',
-			'map_meta_cap'    => true,
+			'map_meta_cap'    => false,
 			'capabilities'    => [
-				'create_posts'  => AIGIS_Capabilities::MANAGE_WORKFLOWS,
-				'edit_posts'    => AIGIS_Capabilities::MANAGE_WORKFLOWS,
-				'delete_posts'  => AIGIS_Capabilities::MANAGE_WORKFLOWS,
+				'create_posts'           => AIGIS_Capabilities::MANAGE_WORKFLOWS,
+				'edit_post'              => AIGIS_Capabilities::MANAGE_WORKFLOWS,
+				'edit_posts'             => AIGIS_Capabilities::MANAGE_WORKFLOWS,
+				'edit_others_posts'      => AIGIS_Capabilities::MANAGE_WORKFLOWS,
+				'edit_private_posts'     => AIGIS_Capabilities::MANAGE_WORKFLOWS,
+				'edit_published_posts'   => AIGIS_Capabilities::MANAGE_WORKFLOWS,
+				'read_post'              => AIGIS_Capabilities::VIEW_WORKFLOWS,
+				'read_private_posts'     => AIGIS_Capabilities::MANAGE_WORKFLOWS,
+				'delete_post'            => AIGIS_Capabilities::MANAGE_WORKFLOWS,
+				'delete_posts'           => AIGIS_Capabilities::MANAGE_WORKFLOWS,
+				'delete_private_posts'   => AIGIS_Capabilities::MANAGE_WORKFLOWS,
+				'delete_published_posts' => AIGIS_Capabilities::MANAGE_WORKFLOWS,
+				'delete_others_posts'    => AIGIS_Capabilities::MANAGE_WORKFLOWS,
+				'publish_posts'          => AIGIS_Capabilities::MANAGE_WORKFLOWS,
 			],
 			'rewrite'         => false,
 			'query_var'       => false,
@@ -71,14 +82,17 @@ class AIGIS_CPT_Workflow {
 	}
 
 	public function render_diagram_metabox( \WP_Post $post ): void {
-		wp_nonce_field( 'aigis_workflow_diagram', 'aigis_workflow_diagram_nonce' );
 		$diagram_source = get_post_meta( $post->ID, '_aigis_mermaid_source', true );
+		if ( '' === $diagram_source ) {
+			$diagram_source = get_post_meta( $post->ID, 'aigis_workflow_mermaid', true );
+		}
 
 		include AIGIS_PLUGIN_DIR . 'admin/views/workflows/metabox-diagram.php';
 	}
 
 	public function render_nodes_metabox( \WP_Post $post ): void {
-		$nodes = get_post_meta( $post->ID, '_aigis_workflow_nodes', true ) ?: [];
+		$nodes  = get_post_meta( $post->ID, '_aigis_workflow_nodes', true ) ?: [];
+		$models = ( new AIGIS_DB_Inventory() )->get_active_for_select();
 		include AIGIS_PLUGIN_DIR . 'admin/views/workflows/metabox-nodes.php';
 	}
 
@@ -98,12 +112,20 @@ class AIGIS_CPT_Workflow {
 
 		if ( isset( $_POST['aigis_diagram_source'] ) ) {
 			// Mermaid source is essentially code — store as-is after basic sanitation.
-			update_post_meta( $post_id, '_aigis_mermaid_source', sanitize_textarea_field( wp_unslash( $_POST['aigis_diagram_source'] ) ) );
+			$diagram_source = sanitize_textarea_field( wp_unslash( $_POST['aigis_diagram_source'] ) );
+			update_post_meta( $post_id, '_aigis_mermaid_source', $diagram_source );
+			update_post_meta( $post_id, 'aigis_workflow_mermaid', $diagram_source );
 		}
 
-		if ( isset( $_POST['aigis_workflow_nodes'] ) && is_array( $_POST['aigis_workflow_nodes'] ) ) {
+		$posted_nodes = $_POST['aigis_workflow_nodes'] ?? null;
+		if ( is_string( $posted_nodes ) && $posted_nodes !== '' ) {
+			$decoded_nodes = json_decode( wp_unslash( $posted_nodes ), true );
+			$posted_nodes  = is_array( $decoded_nodes ) ? $decoded_nodes : [];
+		}
+
+		if ( is_array( $posted_nodes ) ) {
 			$nodes = [];
-			foreach ( wp_unslash( $_POST['aigis_workflow_nodes'] ) as $node ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+			foreach ( $posted_nodes as $node ) {
 				$nodes[] = [
 					'id'          => sanitize_text_field( $node['id'] ?? '' ),
 					'label'       => sanitize_text_field( $node['label'] ?? '' ),

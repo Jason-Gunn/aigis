@@ -11,11 +11,15 @@
 ( function () {
 	'use strict';
 
-	if ( typeof mermaid === 'undefined' ) {
+	const mermaidApi = typeof mermaid !== 'undefined'
+		? mermaid
+		: ( window.mermaid && window.mermaid.default ? window.mermaid.default : null );
+
+	if ( ! mermaidApi ) {
 		return;
 	}
 
-	mermaid.initialize( {
+	mermaidApi.initialize( {
 		startOnLoad : false,
 		theme       : 'default',
 		flowchart   : { useMaxWidth: true, htmlLabels: true },
@@ -43,8 +47,11 @@
 
 		try {
 			const id = 'aigis-mermaid-' + Date.now();
-			const { svg } = await mermaid.render( id, trimmed );
-			preview.innerHTML = svg;
+			const result = await renderMermaid( id, trimmed );
+			preview.innerHTML = result.svg || '';
+			if ( typeof result.bindFunctions === 'function' ) {
+				result.bindFunctions( preview );
+			}
 			hideError();
 		} catch ( err ) {
 			preview.innerHTML = '';
@@ -64,6 +71,26 @@
 			errorBox.textContent = '';
 			errorBox.style.display = 'none';
 		}
+	}
+
+	async function renderMermaid( id, code ) {
+		if ( typeof mermaidApi.render === 'function' ) {
+			return mermaidApi.render( id, code );
+		}
+
+		if ( mermaidApi.mermaidAPI && typeof mermaidApi.mermaidAPI.render === 'function' ) {
+			return new Promise( function( resolve, reject ) {
+				try {
+					mermaidApi.mermaidAPI.render( id, code, function( svg, bindFunctions ) {
+						resolve( { svg: svg, bindFunctions: bindFunctions } );
+					}, preview );
+				} catch ( err ) {
+					reject( err );
+				}
+			} );
+		}
+
+		throw new Error( 'No supported Mermaid render API found.' );
 	}
 
 	// Render immediately on page load.

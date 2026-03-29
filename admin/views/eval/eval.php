@@ -37,8 +37,8 @@ $tabs = [
 			<div class="aigis-kpi-value"><?php echo esc_html( (int) ( $stats['pending'] ?? 0 ) ); ?></div>
 		</div>
 		<div class="aigis-kpi-card">
-			<div class="aigis-kpi-label"><?php esc_html_e( 'Avg Score', 'ai-governance-suite' ); ?></div>
-			<div class="aigis-kpi-value"><?php echo esc_html( number_format( (float) ( $stats['avg_score'] ?? 0 ), 3 ) ); ?></div>
+			<div class="aigis-kpi-label"><?php esc_html_e( 'False Negative Rate', 'ai-governance-suite' ); ?></div>
+			<div class="aigis-kpi-value"><?php echo esc_html( number_format( (float) ( $stats['false_negative_rate'] ?? 0 ), 1 ) ); ?>%</div>
 		</div>
 	</div>
 
@@ -64,12 +64,12 @@ $tabs = [
 			<thead>
 				<tr>
 					<th>#</th>
-					<th><?php esc_html_e( 'Prompt', 'ai-governance-suite' ); ?></th>
+					<th><?php esc_html_e( 'Agent ID', 'ai-governance-suite' ); ?></th>
 					<th><?php esc_html_e( 'Model', 'ai-governance-suite' ); ?></th>
 					<th><?php esc_html_e( 'Result', 'ai-governance-suite' ); ?></th>
-					<th><?php esc_html_e( 'Score', 'ai-governance-suite' ); ?></th>
-					<th><?php esc_html_e( 'Human Verdict', 'ai-governance-suite' ); ?></th>
-					<th><?php esc_html_e( 'Evaluator', 'ai-governance-suite' ); ?></th>
+					<th><?php esc_html_e( 'False Negative', 'ai-governance-suite' ); ?></th>
+					<th><?php esc_html_e( 'Reviewed', 'ai-governance-suite' ); ?></th>
+					<th><?php esc_html_e( 'Rulebook', 'ai-governance-suite' ); ?></th>
 					<th><?php esc_html_e( 'Date', 'ai-governance-suite' ); ?></th>
 				</tr>
 			</thead>
@@ -80,20 +80,13 @@ $tabs = [
 					<?php foreach ( $results as $r ) : ?>
 					<tr>
 						<td><?php echo esc_html( $r->id ); ?></td>
-						<td>
-							<?php $p = $r->prompt_id ? get_post( (int) $r->prompt_id ) : null;
-							echo $p ? '<a href="' . esc_url( get_edit_post_link( $p ) ) . '">' . esc_html( $p->post_title ) . '</a>' : ( $r->prompt_id ? '#' . esc_html( $r->prompt_id ) : '—' ); ?>
-						</td>
-						<td><?php echo esc_html( '#' . $r->model_id ); ?></td>
-						<td><span class="aigis-badge aigis-badge-<?php echo esc_attr( $r->result ); ?>"><?php echo esc_html( ucfirst( $r->result ) ); ?></span></td>
-						<td><?php echo is_numeric( $r->score ) ? esc_html( number_format( (float) $r->score, 3 ) ) : '—'; ?></td>
-						<td>
-							<?php if ( $r->human_verdict ) : ?>
-								<span class="aigis-badge aigis-badge-<?php echo esc_attr( $r->human_verdict ); ?>"><?php echo esc_html( ucfirst( $r->human_verdict ) ); ?></span>
-							<?php else : ?>—<?php endif; ?>
-						</td>
-						<td><?php echo $r->evaluated_by ? esc_html( $r->evaluated_by ) : '—'; ?></td>
-						<td><?php echo esc_html( $r->created_at ); ?></td>
+						<td><code><?php echo esc_html( $r->agent_id ?: '—' ); ?></code></td>
+						<td><?php echo esc_html( trim( ( $r->vendor_name ?? '' ) . ' / ' . ( $r->model_name ?? '' ), ' /' ) ?: '—' ); ?></td>
+						<td><span class="aigis-badge aigis-badge-<?php echo esc_attr( $r->pass_fail ); ?>"><?php echo esc_html( ucfirst( str_replace( '-', ' ', $r->pass_fail ) ) ); ?></span></td>
+						<td><?php echo ! empty( $r->false_negative ) ? esc_html__( 'Yes', 'ai-governance-suite' ) : '—'; ?></td>
+						<td><?php echo ! empty( $r->reviewed_at ) ? esc_html( $r->reviewed_at ) : '—'; ?></td>
+						<td><?php echo esc_html( $r->rulebook_version ?: '—' ); ?></td>
+						<td><?php echo esc_html( $r->submitted_at ); ?></td>
 					</tr>
 					<?php endforeach; ?>
 				<?php endif; ?>
@@ -111,9 +104,9 @@ $tabs = [
 			<thead>
 				<tr>
 					<th>#</th>
-					<th><?php esc_html_e( 'Prompt', 'ai-governance-suite' ); ?></th>
-					<th><?php esc_html_e( 'Auto Result', 'ai-governance-suite' ); ?></th>
-					<th><?php esc_html_e( 'Score', 'ai-governance-suite' ); ?></th>
+					<th><?php esc_html_e( 'Agent ID', 'ai-governance-suite' ); ?></th>
+					<th><?php esc_html_e( 'Model', 'ai-governance-suite' ); ?></th>
+					<th><?php esc_html_e( 'Current Result', 'ai-governance-suite' ); ?></th>
 					<th><?php esc_html_e( 'Notes', 'ai-governance-suite' ); ?></th>
 					<th><?php esc_html_e( 'Verdict', 'ai-governance-suite' ); ?></th>
 				</tr>
@@ -124,13 +117,10 @@ $tabs = [
 				?>
 				<tr>
 					<td><?php echo esc_html( $r->id ); ?></td>
-					<td>
-						<?php $p = $r->prompt_id ? get_post( (int) $r->prompt_id ) : null;
-						echo $p ? '<a href="' . esc_url( get_edit_post_link( $p ) ) . '">' . esc_html( $p->post_title ) . '</a>' : '—'; ?>
-					</td>
-					<td><span class="aigis-badge aigis-badge-<?php echo esc_attr( $r->result ); ?>"><?php echo esc_html( ucfirst( $r->result ) ); ?></span></td>
-					<td><?php echo is_numeric( $r->score ) ? esc_html( number_format( (float) $r->score, 3 ) ) : '—'; ?></td>
-					<td><?php echo esc_html( $r->evaluator_notes ?? '' ); ?></td>
+					<td><code><?php echo esc_html( $r->agent_id ?: '—' ); ?></code></td>
+					<td><?php echo esc_html( trim( ( $r->vendor_name ?? '' ) . ' / ' . ( $r->model_name ?? '' ), ' /' ) ?: '—' ); ?></td>
+					<td><span class="aigis-badge aigis-badge-<?php echo esc_attr( $r->pass_fail ); ?>"><?php echo esc_html( ucfirst( str_replace( '-', ' ', $r->pass_fail ) ) ); ?></span></td>
+					<td><?php echo esc_html( $r->reviewer_notes ?? '' ); ?></td>
 					<td>
 						<form method="post" action="<?php echo esc_url( add_query_arg( 'tab', 'pending', $base_url ) ); ?>" style="display:flex;gap:4px;align-items:center;">
 							<?php wp_nonce_field( 'aigis_eval_verdict', 'aigis_eval_verdict_nonce' ); ?>
@@ -139,8 +129,8 @@ $tabs = [
 								<option value=""><?php esc_html_e( '— Set verdict —', 'ai-governance-suite' ); ?></option>
 								<option value="pass"><?php esc_html_e( 'Pass', 'ai-governance-suite' ); ?></option>
 								<option value="fail"><?php esc_html_e( 'Fail', 'ai-governance-suite' ); ?></option>
-								<option value="flagged"><?php esc_html_e( 'Flagged', 'ai-governance-suite' ); ?></option>
 							</select>
+							<input type="text" name="reviewer_note" class="regular-text" placeholder="<?php esc_attr_e( 'Optional review note', 'ai-governance-suite' ); ?>">
 							<button type="submit" class="button button-small"><?php esc_html_e( 'Save', 'ai-governance-suite' ); ?></button>
 						</form>
 					</td>

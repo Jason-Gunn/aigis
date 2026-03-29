@@ -53,12 +53,22 @@ class AIGIS_CPT_Prompt {
 			'show_in_menu'        => 'aigis-dashboard',
 			'supports'            => [ 'title', 'editor', 'revisions', 'custom-fields', 'author' ],
 			'capability_type'     => 'post',
-			'map_meta_cap'        => true,
+			'map_meta_cap'        => false,
 			'capabilities'        => [
-				'create_posts'   => AIGIS_Capabilities::MANAGE_PROMPTS,
-				'edit_posts'     => AIGIS_Capabilities::MANAGE_PROMPTS,
-				'delete_posts'   => AIGIS_Capabilities::MANAGE_PROMPTS,
-				'publish_posts'  => AIGIS_Capabilities::APPROVE_PROMPTS,
+				'create_posts'          => AIGIS_Capabilities::MANAGE_PROMPTS,
+				'edit_post'             => AIGIS_Capabilities::MANAGE_PROMPTS,
+				'edit_posts'            => AIGIS_Capabilities::MANAGE_PROMPTS,
+				'edit_others_posts'     => AIGIS_Capabilities::MANAGE_PROMPTS,
+				'edit_private_posts'    => AIGIS_Capabilities::MANAGE_PROMPTS,
+				'edit_published_posts'  => AIGIS_Capabilities::MANAGE_PROMPTS,
+				'read_post'             => AIGIS_Capabilities::MANAGE_PROMPTS,
+				'read_private_posts'    => AIGIS_Capabilities::MANAGE_PROMPTS,
+				'delete_post'           => AIGIS_Capabilities::MANAGE_PROMPTS,
+				'delete_posts'          => AIGIS_Capabilities::MANAGE_PROMPTS,
+				'delete_private_posts'  => AIGIS_Capabilities::MANAGE_PROMPTS,
+				'delete_published_posts'=> AIGIS_Capabilities::MANAGE_PROMPTS,
+				'delete_others_posts'   => AIGIS_Capabilities::MANAGE_PROMPTS,
+				'publish_posts'         => AIGIS_Capabilities::APPROVE_PROMPTS,
 			],
 			'rewrite'             => false,
 			'query_var'           => false,
@@ -150,6 +160,20 @@ class AIGIS_CPT_Prompt {
 		$max_tokens  = (int) get_post_meta( $post->ID, '_aigis_max_tokens', true );
 		$temperature = (float) ( get_post_meta( $post->ID, '_aigis_temperature', true ) ?: 0.7 );
 
+		if ( '' === $model_id ) {
+			$model_id = $this->resolve_legacy_model_id( $post->ID );
+		}
+		if ( '' === $department ) {
+			$department = (string) get_post_meta( $post->ID, 'aigis_prompt_department', true );
+		}
+		if ( 0 === $max_tokens ) {
+			$max_tokens = (int) get_post_meta( $post->ID, 'aigis_prompt_max_tokens', true );
+		}
+		$legacy_temperature = get_post_meta( $post->ID, 'aigis_prompt_temperature', true );
+		if ( (float) $temperature === 0.7 && $legacy_temperature !== '' ) {
+			$temperature = (float) $legacy_temperature;
+		}
+
 		$db_inventory = new AIGIS_DB_Inventory();
 		$models       = $db_inventory->get_active_for_select();
 
@@ -172,10 +196,10 @@ class AIGIS_CPT_Prompt {
 		if ( ! isset( $_POST['aigis_prompt_settings_nonce'] ) ) {
 			return;
 		}
-		if ( ! wp_verify_nonce( sanitize_key( $_POST['aigis_prompt_settings_nonce'] ), 'aigis_prompt_settings' ) ) {
+		if ( ! wp_verify_nonce( sanitize_key( $_POST['aigis_prompt_settings_nonce'] ), 'aigis_save_prompt_settings' ) ) {
 			return;
 		}
-		if ( ! wp_verify_nonce( sanitize_key( $_POST['aigis_prompt_settings_nonce'] ), 'aigis_save_prompt_settings' ) ) {
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return;
 		}
 		if ( ! current_user_can( AIGIS_Capabilities::MANAGE_PROMPTS ) ) {
@@ -186,6 +210,20 @@ class AIGIS_CPT_Prompt {
 		update_post_meta( $post_id, '_aigis_department', sanitize_text_field( wp_unslash( $_POST['aigis_department'] ?? '' ) ) );
 		update_post_meta( $post_id, '_aigis_max_tokens', absint( $_POST['aigis_max_tokens'] ?? 0 ) );
 		update_post_meta( $post_id, '_aigis_temperature', (float) ( $_POST['aigis_temperature'] ?? 0.7 ) );
+
+		// Keep legacy prompt meta keys in sync so older seeded/demo data remains editable.
+		update_post_meta( $post_id, 'aigis_prompt_department', sanitize_text_field( wp_unslash( $_POST['aigis_department'] ?? '' ) ) );
+		update_post_meta( $post_id, 'aigis_prompt_max_tokens', absint( $_POST['aigis_max_tokens'] ?? 0 ) );
+		update_post_meta( $post_id, 'aigis_prompt_temperature', (float) ( $_POST['aigis_temperature'] ?? 0.7 ) );
+		if ( ! empty( $_POST['aigis_model_id'] ) ) {
+			$inventory_row = (array) ( ( new AIGIS_DB_Inventory() )->get( absint( $_POST['aigis_model_id'] ) ) ?: [] );
+			if ( ! empty( $inventory_row['model_name'] ) ) {
+				update_post_meta( $post_id, 'aigis_prompt_model', sanitize_text_field( (string) $inventory_row['model_name'] ) );
+			}
+			if ( ! empty( $inventory_row['vendor_name'] ) ) {
+				update_post_meta( $post_id, 'aigis_prompt_provider', sanitize_text_field( (string) $inventory_row['vendor_name'] ) );
+			}
+		}
 
 		// Audit the save.
 		$audit = new AIGIS_DB_Audit();
@@ -265,6 +303,25 @@ class AIGIS_CPT_Prompt {
 
 		$result = $provider->send_prompt( $prompt, [] );
 		wp_send_json_success( $result );
+	}
+
+	private function resolve_legacy_model_id( int $post_id ): string {
+		$legacy_model_name = (string) get_post_meta( $post_id, 'aigis_prompt_model', true );
+		if ( '' === $legacy_model_name ) {
+			return '';
+		}
+
+		global $wpdb;
+		$table = $wpdb->prefix . 'aigis_ai_inventory';
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$model_id = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT id FROM `{$table}` WHERE model_name = %s ORDER BY id ASC LIMIT 1",
+				$legacy_model_name
+			)
+		);
+
+		return $model_id ? (string) $model_id : '';
 	}
 
 	public function ajax_promote_prompt(): void {

@@ -26,20 +26,22 @@ class AIGIS_Page_Inventory {
 		$this->handle_actions();
 
 		// Editing single item?
-		$edit_id = isset( $_GET['edit'] ) ? absint( $_GET['edit'] ) : 0;
+		$edit_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : absint( $_GET['edit'] ?? 0 );
 		if ( $edit_id ) {
-			$item = $this->db->get( $edit_id );
+			$item = (array) $this->db->get( $edit_id );
 			if ( ! $item ) {
 				wp_die( esc_html__( 'Item not found.', 'ai-governance-suite' ) );
 			}
+			$is_edit = true;
 			include AIGIS_PLUGIN_DIR . 'admin/views/inventory/edit.php';
 			return;
 		}
 
 		// Adding new item?
-		$adding = isset( $_GET['action'] ) && $_GET['action'] === 'new';
+		$adding = isset( $_GET['action'] ) && in_array( $_GET['action'], [ 'new', 'add' ], true );
 		if ( $adding && current_user_can( AIGIS_Capabilities::MANAGE_AI_INVENTORY ) ) {
 			$item = null;
+			$is_edit = false;
 			include AIGIS_PLUGIN_DIR . 'admin/views/inventory/edit.php';
 			return;
 		}
@@ -52,6 +54,7 @@ class AIGIS_Page_Inventory {
 		$args = [
 			'limit'       => $per_page,
 			'offset'      => $offset,
+			'search'      => sanitize_text_field( $_GET['s'] ?? '' ),
 			'status'      => sanitize_text_field( $_GET['status'] ?? '' ),
 			'vendor'      => sanitize_text_field( $_GET['vendor'] ?? '' ),
 			'access_type' => sanitize_text_field( $_GET['access_type'] ?? '' ),
@@ -68,6 +71,19 @@ class AIGIS_Page_Inventory {
 	}
 
 	private function handle_actions(): void {
+		if ( isset( $_GET['action'], $_GET['id'] ) && $_GET['action'] === 'delete' ) {
+			$id = absint( $_GET['id'] );
+			if ( ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ?? '' ), 'aigis_delete_model_' . $id ) ) {
+				wp_die( esc_html__( 'Nonce verification failed.', 'ai-governance-suite' ) );
+			}
+			if ( ! current_user_can( AIGIS_Capabilities::MANAGE_AI_INVENTORY ) ) {
+				wp_die( esc_html__( 'Permission denied.', 'ai-governance-suite' ) );
+			}
+			$this->db->delete( [ 'id' => $id ] );
+			( new AIGIS_DB_Audit() )->log( 'inventory.deleted', 'inventory', (string) $id, 'Model deleted.' );
+			$this->finish_request( admin_url( 'admin.php?page=aigis-inventory&deleted=1' ) );
+		}
+
 		if ( empty( $_POST['aigis_inventory_action'] ) ) {
 			return;
 		}
@@ -98,26 +114,37 @@ class AIGIS_Page_Inventory {
 			$audit->log( 'inventory.deleted', 'inventory', (string) $id, 'Model deleted.' );
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=aigis-inventory&saved=1' ) );
-		exit;
+		$this->finish_request( admin_url( 'admin.php?page=aigis-inventory&saved=1' ) );
 	}
 
 	private function sanitize_inventory_post( array $post ): array {
-		$allowed_access  = [ 'api', 'on-prem', 'custom-agent' ];
-		$allowed_statuses = [ 'active', 'deprecated', 'retired' ];
+		$allowed_access   = [ 'api-model', 'on-prem', 'custom-agent' ];
+		$allowed_statuses = [ 'active', 'deprecated', 'under-review' ];
+		$allowed_risk     = [ 'low', 'medium', 'high' ];
 
 		return [
 			'vendor_name'    => sanitize_text_field( wp_unslash( $post['vendor_name'] ?? '' ) ),
 			'model_name'     => sanitize_text_field( wp_unslash( $post['model_name'] ?? '' ) ),
-			'version'        => sanitize_text_field( wp_unslash( $post['version'] ?? '' ) ),
-			'access_type'    => in_array( $post['access_type'] ?? '', $allowed_access, true ) ? $post['access_type'] : 'api',
-			'status'         => in_array( $post['status'] ?? '', $allowed_statuses, true ) ? $post['status'] : 'active',
-			'description'    => sanitize_textarea_field( wp_unslash( $post['description'] ?? '' ) ),
-			'endpoint_url'   => esc_url_raw( wp_unslash( $post['endpoint_url'] ?? '' ) ),
-			'data_residency' => sanitize_text_field( wp_unslash( $post['data_residency'] ?? '' ) ),
-			'risk_level'     => sanitize_text_field( wp_unslash( $post['risk_level'] ?? '' ) ),
+			'model_version'  => sanitize_text_field( wp_unslash( $post['model_version'] ?? '' ) ),
+			'integration_type' => in_array( $post['integration_type'] ?? '', $allowed_access, true ) ? sanitize_text_field( wp_unslash( $post['integration_type'] ) ) : 'api-model',
+			'status'         => in_array( $post['status'] ?? '', $allowed_statuses, true ) ? sanitize_text_field( wp_unslash( $post['status'] ) ) : 'active',
+			'api_endpoint'   => esc_url_raw( wp_unslash( $post['api_endpoint'] ?? '' ) ),
+			'agent_identifier' => sanitize_text_field( wp_unslash( $post['agent_identifier'] ?? '' ) ),
+			'data_categories' => sanitize_text_field( wp_unslash( $post['data_categories'] ?? '' ) ),
+			'risk_level'     => in_array( $post['risk_level'] ?? '', $allowed_risk, true ) ? sanitize_text_field( wp_unslash( $post['risk_level'] ) ) : 'medium',
 			'owner_user_id'  => absint( $post['owner_user_id'] ?? 0 ),
 			'notes'          => sanitize_textarea_field( wp_unslash( $post['notes'] ?? '' ) ),
 		];
+	}
+
+	private function finish_request( string $url ): void {
+		if ( ! headers_sent() ) {
+			wp_safe_redirect( $url );
+			exit;
+		}
+
+		echo '<script>window.location = ' . wp_json_encode( $url ) . ';</script>';
+		echo '<noscript><meta http-equiv="refresh" content="0;url=' . esc_url( $url ) . '"></noscript>';
+		exit;
 	}
 }

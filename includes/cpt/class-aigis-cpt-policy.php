@@ -45,12 +45,22 @@ class AIGIS_CPT_Policy {
 			'show_in_menu'    => 'aigis-dashboard',
 			'supports'        => [ 'title', 'editor', 'revisions', 'author', 'custom-fields' ],
 			'capability_type' => 'post',
-			'map_meta_cap'    => true,
+			'map_meta_cap'    => false,
 			'capabilities'    => [
-				'create_posts'  => AIGIS_Capabilities::MANAGE_POLICIES,
-				'edit_posts'    => AIGIS_Capabilities::MANAGE_POLICIES,
-				'delete_posts'  => AIGIS_Capabilities::MANAGE_POLICIES,
-				'publish_posts' => AIGIS_Capabilities::APPROVE_POLICIES,
+				'create_posts'           => AIGIS_Capabilities::MANAGE_POLICIES,
+				'edit_post'              => AIGIS_Capabilities::MANAGE_POLICIES,
+				'edit_posts'             => AIGIS_Capabilities::MANAGE_POLICIES,
+				'edit_others_posts'      => AIGIS_Capabilities::MANAGE_POLICIES,
+				'edit_private_posts'     => AIGIS_Capabilities::MANAGE_POLICIES,
+				'edit_published_posts'   => AIGIS_Capabilities::MANAGE_POLICIES,
+				'read_post'              => AIGIS_Capabilities::VIEW_POLICIES,
+				'read_private_posts'     => AIGIS_Capabilities::MANAGE_POLICIES,
+				'delete_post'            => AIGIS_Capabilities::MANAGE_POLICIES,
+				'delete_posts'           => AIGIS_Capabilities::MANAGE_POLICIES,
+				'delete_private_posts'   => AIGIS_Capabilities::MANAGE_POLICIES,
+				'delete_published_posts' => AIGIS_Capabilities::MANAGE_POLICIES,
+				'delete_others_posts'    => AIGIS_Capabilities::MANAGE_POLICIES,
+				'publish_posts'          => AIGIS_Capabilities::APPROVE_POLICIES,
 			],
 			'rewrite'         => false,
 			'query_var'       => false,
@@ -119,10 +129,10 @@ class AIGIS_CPT_Policy {
 	}
 
 	public function render_details_metabox( \WP_Post $post ): void {
-		wp_nonce_field( 'aigis_policy_details', 'aigis_policy_details_nonce' );
-		$version      = get_post_meta( $post->ID, '_aigis_policy_version', true ) ?: '1.0';
-		$effective    = get_post_meta( $post->ID, '_aigis_policy_effective_date', true );
-		$expiry       = get_post_meta( $post->ID, '_aigis_policy_expiry_date', true );
+		$version        = get_post_meta( $post->ID, '_aigis_policy_version', true ) ?: '1.0';
+		$effective_date = get_post_meta( $post->ID, '_aigis_policy_effective_date', true );
+		$review_date    = get_post_meta( $post->ID, '_aigis_policy_expiry_date', true );
+		$owner          = get_post_meta( $post->ID, '_aigis_policy_owner', true );
 
 		include AIGIS_PLUGIN_DIR . 'admin/views/policies/metabox-details.php';
 	}
@@ -167,11 +177,16 @@ class AIGIS_CPT_Policy {
 		if ( isset( $_POST['aigis_policy_version'] ) ) {
 			update_post_meta( $post_id, '_aigis_policy_version', sanitize_text_field( wp_unslash( $_POST['aigis_policy_version'] ) ) );
 		}
-		if ( isset( $_POST['aigis_policy_effective_date'] ) ) {
-			update_post_meta( $post_id, '_aigis_policy_effective_date', sanitize_text_field( wp_unslash( $_POST['aigis_policy_effective_date'] ) ) );
+		$effective_date = $_POST['aigis_policy_effective_date'] ?? $_POST['aigis_effective_date'] ?? null;
+		if ( null !== $effective_date ) {
+			update_post_meta( $post_id, '_aigis_policy_effective_date', sanitize_text_field( wp_unslash( $effective_date ) ) );
 		}
-		if ( isset( $_POST['aigis_policy_expiry_date'] ) ) {
-			update_post_meta( $post_id, '_aigis_policy_expiry_date', sanitize_text_field( wp_unslash( $_POST['aigis_policy_expiry_date'] ) ) );
+		$review_date = $_POST['aigis_policy_expiry_date'] ?? $_POST['aigis_review_date'] ?? null;
+		if ( null !== $review_date ) {
+			update_post_meta( $post_id, '_aigis_policy_expiry_date', sanitize_text_field( wp_unslash( $review_date ) ) );
+		}
+		if ( isset( $_POST['aigis_policy_owner'] ) ) {
+			update_post_meta( $post_id, '_aigis_policy_owner', sanitize_text_field( wp_unslash( $_POST['aigis_policy_owner'] ) ) );
 		}
 
 		$audit = new AIGIS_DB_Audit();

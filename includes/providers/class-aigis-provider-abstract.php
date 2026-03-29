@@ -66,6 +66,7 @@ abstract class AIGIS_Provider_Abstract {
 		if ( ! $model ) {
 			return null;
 		}
+		$model = (array) $model;
 
 		$vendor = strtolower( trim( $model['vendor_name'] ?? '' ) );
 

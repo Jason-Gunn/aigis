@@ -32,9 +32,9 @@ $base_url  = admin_url( 'admin.php?page=aigis-inventory' );
 				<?php esc_html_e( 'Access Type', 'ai-governance-suite' ); ?>
 				<select name="access_type">
 					<option value=""><?php esc_html_e( 'All', 'ai-governance-suite' ); ?></option>
-					<option value="api" <?php selected( $type_f, 'api' ); ?>><?php esc_html_e( 'API', 'ai-governance-suite' ); ?></option>
-					<option value="local" <?php selected( $type_f, 'local' ); ?>><?php esc_html_e( 'Local / On-prem', 'ai-governance-suite' ); ?></option>
-					<option value="custom_agent" <?php selected( $type_f, 'custom_agent' ); ?>><?php esc_html_e( 'Custom Agent', 'ai-governance-suite' ); ?></option>
+					<option value="api-model" <?php selected( $type_f, 'api-model' ); ?>><?php esc_html_e( 'API Model', 'ai-governance-suite' ); ?></option>
+					<option value="on-prem" <?php selected( $type_f, 'on-prem' ); ?>><?php esc_html_e( 'On-prem', 'ai-governance-suite' ); ?></option>
+					<option value="custom-agent" <?php selected( $type_f, 'custom-agent' ); ?>><?php esc_html_e( 'Custom Agent', 'ai-governance-suite' ); ?></option>
 				</select>
 			</label>
 			<label>
@@ -42,7 +42,8 @@ $base_url  = admin_url( 'admin.php?page=aigis-inventory' );
 				<select name="status">
 					<option value=""><?php esc_html_e( 'All', 'ai-governance-suite' ); ?></option>
 					<option value="active" <?php selected( $status_f, 'active' ); ?>><?php esc_html_e( 'Active', 'ai-governance-suite' ); ?></option>
-					<option value="inactive" <?php selected( $status_f, 'inactive' ); ?>><?php esc_html_e( 'Inactive', 'ai-governance-suite' ); ?></option>
+					<option value="deprecated" <?php selected( $status_f, 'deprecated' ); ?>><?php esc_html_e( 'Deprecated', 'ai-governance-suite' ); ?></option>
+					<option value="under-review" <?php selected( $status_f, 'under-review' ); ?>><?php esc_html_e( 'Under Review', 'ai-governance-suite' ); ?></option>
 				</select>
 			</label>
 			<?php submit_button( __( 'Filter', 'ai-governance-suite' ), 'secondary', '', false ); ?>
@@ -58,11 +59,11 @@ $base_url  = admin_url( 'admin.php?page=aigis-inventory' );
 				<tr>
 					<th><?php esc_html_e( 'Model Name', 'ai-governance-suite' ); ?></th>
 					<th><?php esc_html_e( 'Vendor', 'ai-governance-suite' ); ?></th>
-					<th><?php esc_html_e( 'Slug', 'ai-governance-suite' ); ?></th>
-					<th><?php esc_html_e( 'Access', 'ai-governance-suite' ); ?></th>
-					<th><?php esc_html_e( 'Env', 'ai-governance-suite' ); ?></th>
+					<th><?php esc_html_e( 'Agent ID', 'ai-governance-suite' ); ?></th>
+					<th><?php esc_html_e( 'Integration', 'ai-governance-suite' ); ?></th>
+					<th><?php esc_html_e( 'Version', 'ai-governance-suite' ); ?></th>
 					<th><?php esc_html_e( 'Status', 'ai-governance-suite' ); ?></th>
-					<th><?php esc_html_e( 'Max Tokens', 'ai-governance-suite' ); ?></th>
+					<th><?php esc_html_e( 'Risk', 'ai-governance-suite' ); ?></th>
 					<th class="column-actions"><?php esc_html_e( 'Actions', 'ai-governance-suite' ); ?></th>
 				</tr>
 			</thead>
@@ -79,15 +80,15 @@ $base_url  = admin_url( 'admin.php?page=aigis-inventory' );
 							<strong><a href="<?php echo esc_url( $edit_url ); ?>"><?php echo esc_html( $item['model_name'] ); ?></a></strong>
 						</td>
 						<td><?php echo esc_html( $item['vendor_name'] ); ?></td>
-						<td><code><?php echo esc_html( $item['model_slug'] ); ?></code></td>
-						<td><?php echo esc_html( ucfirst( $item['access_type'] ) ); ?></td>
-						<td><?php echo esc_html( ucfirst( $item['environment'] ?? '—' ) ); ?></td>
+						<td><code><?php echo esc_html( $item['agent_identifier'] ); ?></code></td>
+						<td><?php echo esc_html( ucfirst( str_replace( '-', ' ', $item['integration_type'] ) ) ); ?></td>
+						<td><?php echo esc_html( $item['model_version'] ?: '—' ); ?></td>
 						<td>
 							<span class="aigis-badge aigis-badge-<?php echo esc_attr( $item['status'] ); ?>">
-								<?php echo esc_html( ucfirst( $item['status'] ) ); ?>
+								<?php echo esc_html( ucfirst( str_replace( '-', ' ', $item['status'] ) ) ); ?>
 							</span>
 						</td>
-						<td><?php echo $item['max_tokens'] ? esc_html( number_format( (int) $item['max_tokens'] ) ) : '—'; ?></td>
+						<td><?php echo esc_html( ucfirst( $item['risk_level'] ?: 'medium' ) ); ?></td>
 						<td class="column-actions">
 							<a href="<?php echo esc_url( $edit_url ); ?>" class="button button-small"><?php esc_html_e( 'Edit', 'ai-governance-suite' ); ?></a>
 							<a href="<?php echo esc_url( $delete_url ); ?>" class="button button-small aigis-confirm-delete" data-confirm="<?php esc_attr_e( 'Delete this model?', 'ai-governance-suite' ); ?>">

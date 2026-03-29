@@ -13,6 +13,12 @@ $base_url = admin_url( 'admin.php?page=aigis-stress-tests' );
 <div class="wrap aigis-wrap">
 	<h1><?php esc_html_e( 'Stress Tests', 'ai-governance-suite' ); ?></h1>
 
+	<?php if ( isset( $_GET['ran'] ) ) : ?>
+		<div class="notice notice-success"><p><?php printf( esc_html__( 'Created %d stress test run(s).', 'ai-governance-suite' ), absint( $_GET['ran'] ) ); ?></p></div>
+	<?php elseif ( isset( $_GET['error'] ) ) : ?>
+		<div class="notice notice-error"><p><?php esc_html_e( 'Select a prompt and at least one variation before running a test.', 'ai-governance-suite' ); ?></p></div>
+	<?php endif; ?>
+
 	<div class="aigis-row">
 		<!-- Launch a test run -->
 		<div class="aigis-col">
@@ -39,10 +45,9 @@ $base_url = admin_url( 'admin.php?page=aigis-stress-tests' );
 							<td>
 								<?php foreach ( $variations as $v ) : ?>
 								<label style="display:block;margin-bottom:4px;">
-									<input type="checkbox" name="variation_ids[]" value="<?php echo esc_attr( $v['id'] ); ?>"
-										<?php if ( $v['enabled'] ) echo 'checked'; ?>>
-									<?php echo esc_html( $v['variation_name'] ); ?>
-									<span style="color:#646970;font-size:.8125rem"> — <?php echo esc_html( $v['variation_type'] ); ?></span>
+									<input type="checkbox" name="variation_ids[]" value="<?php echo esc_attr( $v->id ); ?>">
+									<?php echo esc_html( $v->name ); ?>
+									<span style="color:#646970;font-size:.8125rem"> — <?php echo esc_html( $v->category ); ?></span>
 								</label>
 								<?php endforeach; ?>
 								<?php if ( empty( $variations ) ) : ?>
@@ -72,20 +77,16 @@ $base_url = admin_url( 'admin.php?page=aigis-stress-tests' );
 					<thead>
 						<tr>
 							<th><?php esc_html_e( 'Name', 'ai-governance-suite' ); ?></th>
-							<th><?php esc_html_e( 'Type', 'ai-governance-suite' ); ?></th>
-							<th><?php esc_html_e( 'Status', 'ai-governance-suite' ); ?></th>
+							<th><?php esc_html_e( 'Category', 'ai-governance-suite' ); ?></th>
+							<th><?php esc_html_e( 'Slug', 'ai-governance-suite' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
 						<?php foreach ( $variations as $v ) : ?>
 						<tr>
-							<td><?php echo esc_html( $v['variation_name'] ); ?></td>
-							<td><code><?php echo esc_html( $v['variation_type'] ); ?></code></td>
-							<td>
-								<span class="aigis-badge aigis-badge-<?php echo $v['enabled'] ? 'active' : 'inactive'; ?>">
-									<?php echo $v['enabled'] ? esc_html__( 'Enabled', 'ai-governance-suite' ) : esc_html__( 'Disabled', 'ai-governance-suite' ); ?>
-								</span>
-							</td>
+							<td><?php echo esc_html( $v->name ); ?></td>
+							<td><code><?php echo esc_html( $v->category ); ?></code></td>
+							<td><code><?php echo esc_html( $v->slug ); ?></code></td>
 						</tr>
 						<?php endforeach; ?>
 					</tbody>
@@ -108,36 +109,30 @@ $base_url = admin_url( 'admin.php?page=aigis-stress-tests' );
 						<th>#</th>
 						<th><?php esc_html_e( 'Prompt', 'ai-governance-suite' ); ?></th>
 						<th><?php esc_html_e( 'Variation', 'ai-governance-suite' ); ?></th>
-						<th><?php esc_html_e( 'Status', 'ai-governance-suite' ); ?></th>
+						<th><?php esc_html_e( 'Provider / Model', 'ai-governance-suite' ); ?></th>
 						<th><?php esc_html_e( 'Score', 'ai-governance-suite' ); ?></th>
-						<th><?php esc_html_e( 'Latency (ms)', 'ai-governance-suite' ); ?></th>
-						<th><?php esc_html_e( 'Tokens', 'ai-governance-suite' ); ?></th>
+						<th><?php esc_html_e( 'Flagged', 'ai-governance-suite' ); ?></th>
 						<th><?php esc_html_e( 'Run At', 'ai-governance-suite' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
 					<?php foreach ( $runs as $r ) :
-						$prompt_link = get_edit_post_link( (int) $r->prompt_id );
+						$prompt_link = get_edit_post_link( (int) $r->prompt_post_id );
 					?>
 					<tr>
 						<td><?php echo esc_html( $r->id ); ?></td>
 						<td>
 							<?php if ( $prompt_link ) : ?>
-								<a href="<?php echo esc_url( $prompt_link ); ?>"><?php echo esc_html( $r->post_title ?? '#' . $r->prompt_id ); ?></a>
+								<a href="<?php echo esc_url( $prompt_link ); ?>"><?php echo esc_html( $r->prompt_title ?? '#' . $r->prompt_post_id ); ?></a>
 							<?php else : ?>
-								<?php echo esc_html( '#' . $r->prompt_id ); ?>
+								<?php echo esc_html( '#' . $r->prompt_post_id ); ?>
 							<?php endif; ?>
 						</td>
 						<td><?php echo esc_html( $r->variation_name ?? '—' ); ?></td>
-						<td>
-							<span class="aigis-badge aigis-badge-<?php echo esc_attr( $r->status ); ?>">
-								<?php echo esc_html( ucfirst( $r->status ) ); ?>
-							</span>
-						</td>
-						<td><?php echo is_numeric( $r->score ) ? esc_html( number_format( (float) $r->score, 3 ) ) : '—'; ?></td>
-						<td><?php echo $r->latency_ms ? esc_html( number_format( (float) $r->latency_ms, 0 ) ) : '—'; ?></td>
-						<td><?php echo $r->tokens_used ? esc_html( number_format( (int) $r->tokens_used ) ) : '—'; ?></td>
-						<td><?php echo esc_html( $r->created_at ); ?></td>
+						<td><?php echo esc_html( trim( $r->provider . ' / ' . $r->model_used, ' /' ) ?: '—' ); ?></td>
+						<td><?php echo esc_html( number_format( (float) $r->score, 2 ) ); ?></td>
+						<td><?php echo ! empty( $r->flagged ) ? esc_html__( 'Yes', 'ai-governance-suite' ) : '—'; ?></td>
+						<td><?php echo esc_html( $r->executed_at ); ?></td>
 					</tr>
 					<?php endforeach; ?>
 				</tbody>

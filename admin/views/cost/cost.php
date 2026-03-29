@@ -91,7 +91,7 @@ $base_url = admin_url( 'admin.php?page=aigis-cost' );
 				$edit_data = [];
 				if ( $edit_id ) {
 					$db        = new AIGIS_DB_Cost();
-					$edit_data = $db->get( $edit_id ) ?: [];
+					$edit_data = (array) ( $db->get( $edit_id ) ?: [] );
 				}
 				$f = fn( $k ) => $edit_data[ $k ] ?? '';
 				?>

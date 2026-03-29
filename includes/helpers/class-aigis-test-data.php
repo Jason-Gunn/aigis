@@ -207,6 +207,8 @@ class AIGIS_Test_Data {
 				'content' => 'You are a professional customer support agent. Given the following customer message, write a helpful, empathetic, and concise reply that addresses their concern and offers a clear resolution path.',
 				'status'  => 'publish',
 				'meta'    => [
+					'_aigis_max_tokens'       => '512',
+					'_aigis_temperature'      => '0.3',
 					'aigis_prompt_stage'       => 'production',
 					'aigis_prompt_provider'    => 'openai',
 					'aigis_prompt_model'       => 'gpt-4o',
@@ -220,6 +222,8 @@ class AIGIS_Test_Data {
 				'content' => 'Summarise the following policy document into 5 key bullet points written in plain English for a non-technical audience. Focus on obligations, prohibited actions, and consequences of non-compliance.',
 				'status'  => 'publish',
 				'meta'    => [
+					'_aigis_max_tokens'       => '1024',
+					'_aigis_temperature'      => '0.2',
 					'aigis_prompt_stage'       => 'staging',
 					'aigis_prompt_provider'    => 'anthropic',
 					'aigis_prompt_model'       => 'claude-opus-4-5',
@@ -233,6 +237,8 @@ class AIGIS_Test_Data {
 				'content' => 'Review the following code snippet for security vulnerabilities, performance issues, and logic errors. Provide actionable recommendations with corrected code examples where relevant.',
 				'status'  => 'publish',
 				'meta'    => [
+					'_aigis_max_tokens'       => '2048',
+					'_aigis_temperature'      => '0.1',
 					'aigis_prompt_stage'       => 'development',
 					'aigis_prompt_provider'    => 'openai',
 					'aigis_prompt_model'       => 'gpt-4o',
@@ -437,6 +443,7 @@ class AIGIS_Test_Data {
 		global $wpdb;
 		$table = $wpdb->prefix . 'aigis_usage_logs';
 		$ids   = [];
+		$prompt_ids = self::get_test_prompt_ids();
 
 		// Row format: [ agent_id, inv_idx, dept, proj, in_t, out_t, ms, cost, status, days_ago ]
 		// inv_idx: 0 = GPT-4o (OpenAI), 1 = Claude (Anthropic), 2 = LLaMA (Meta on-prem)
@@ -490,10 +497,12 @@ class AIGIS_Test_Data {
 
 		foreach ( $rows as $i => $r ) {
 			$inv_idx = $r[1];
+			$prompt_id = self::resolve_test_prompt_id( $r[0], $r[2], $prompt_ids );
 			$wpdb->insert( $table, [
 				'agent_id'      => $r[0],
 				'inventory_id'  => $inventory_ids[ $inv_idx ] ?? 0,
 				'user_id'       => 1,
+				'prompt_post_id'=> $prompt_id,
 				'session_id'    => 'aigis-test-session-' . $i,
 				'department'    => $r[2],
 				'project_tag'   => $r[3],
@@ -512,6 +521,50 @@ class AIGIS_Test_Data {
 		}
 
 		return [ count( $ids ), $ids ];
+	}
+
+	/**
+	 * Map built-in test prompt titles to their post IDs.
+	 *
+	 * @return array<string,int>
+	 */
+	private static function get_test_prompt_ids(): array {
+		$map = [];
+		$prompts = get_posts( [
+			'post_type'      => 'aigis_prompt',
+			'post_status'    => 'any',
+			'posts_per_page' => -1,
+			'fields'         => 'ids',
+		] );
+
+		foreach ( $prompts as $prompt_id ) {
+			$map[ get_the_title( $prompt_id ) ] = (int) $prompt_id;
+		}
+
+		return $map;
+	}
+
+	/**
+	 * Resolve a deterministic test prompt for a seeded usage-log row.
+	 */
+	private static function resolve_test_prompt_id( string $agent_id, string $department, array $prompt_ids ): int {
+		if ( $agent_id === 'test-anthropic-claude' ) {
+			return (int) ( $prompt_ids['[TEST] Policy Document Summariser'] ?? 0 );
+		}
+
+		if ( $agent_id === 'test-ollama-llama3' ) {
+			return (int) ( $prompt_ids['[TEST] Code Security Review Assistant'] ?? 0 );
+		}
+
+		if ( $agent_id === 'test-openai-gpt4o' && $department === 'Customer Support' ) {
+			return (int) ( $prompt_ids['[TEST] Customer Support Reply Generator'] ?? 0 );
+		}
+
+		if ( $agent_id === 'test-openai-gpt4o' ) {
+			return (int) ( $prompt_ids['[TEST] Code Security Review Assistant'] ?? 0 );
+		}
+
+		return 0;
 	}
 
 	/** @return array{int, int[]} */

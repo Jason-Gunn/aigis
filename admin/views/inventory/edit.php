@@ -13,8 +13,9 @@ $form_action = admin_url( 'admin.php?page=aigis-inventory' );
 $title       = $is_edit
 	? __( 'Edit AI Model', 'ai-governance-suite' )
 	: __( 'Add New AI Model', 'ai-governance-suite' );
+$item        = is_array( $item ) ? $item : [];
 
-$f = fn( string $key ) => $item[ $key ] ?? '';
+$f = fn( string $key ) => ( $item[ $key ] ?? '' );
 ?>
 <div class="wrap aigis-wrap">
 	<h1>
@@ -33,8 +34,8 @@ $f = fn( string $key ) => $item[ $key ] ?? '';
 	<?php endif; ?>
 
 	<form method="post" action="<?php echo esc_url( $form_action ); ?>">
-		<?php wp_nonce_field( 'aigis_save_model', 'aigis_model_nonce' ); ?>
-		<input type="hidden" name="action" value="<?php echo $is_edit ? 'update' : 'create'; ?>">
+		<?php wp_nonce_field( 'aigis_inventory_save', 'aigis_inventory_nonce' ); ?>
+		<input type="hidden" name="aigis_inventory_action" value="<?php echo $is_edit ? 'update' : 'create'; ?>">
 		<?php if ( $is_edit ) : ?>
 			<input type="hidden" name="id" value="<?php echo esc_attr( $item['id'] ); ?>">
 		<?php endif; ?>
@@ -55,31 +56,28 @@ $f = fn( string $key ) => $item[ $key ] ?? '';
 				</datalist></td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="model_slug"><?php esc_html_e( 'Model Slug *', 'ai-governance-suite' ); ?></label></th>
+				<th scope="row"><label for="agent_identifier"><?php esc_html_e( 'Agent Identifier *', 'ai-governance-suite' ); ?></label></th>
 				<td>
-					<input type="text" id="model_slug" name="model_slug" class="regular-text" required
-						value="<?php echo esc_attr( $f('model_slug') ); ?>">
-					<p class="description"><?php esc_html_e( 'e.g. gpt-4o, claude-3-opus-20240229, llama3', 'ai-governance-suite' ); ?></p>
+					<input type="text" id="agent_identifier" name="agent_identifier" class="regular-text" required
+						value="<?php echo esc_attr( $f('agent_identifier') ); ?>">
+					<p class="description"><?php esc_html_e( 'Stable internal identifier used by logs and API routing.', 'ai-governance-suite' ); ?></p>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="access_type"><?php esc_html_e( 'Access Type *', 'ai-governance-suite' ); ?></label></th>
+				<th scope="row"><label for="integration_type"><?php esc_html_e( 'Integration Type *', 'ai-governance-suite' ); ?></label></th>
 				<td>
-					<select id="access_type" name="access_type" required>
-						<option value="api"          <?php selected( $f('access_type'), 'api' ); ?>><?php esc_html_e( 'API', 'ai-governance-suite' ); ?></option>
-						<option value="local"        <?php selected( $f('access_type'), 'local' ); ?>><?php esc_html_e( 'Local / On-prem', 'ai-governance-suite' ); ?></option>
-						<option value="custom_agent" <?php selected( $f('access_type'), 'custom_agent' ); ?>><?php esc_html_e( 'Custom Agent', 'ai-governance-suite' ); ?></option>
+					<select id="integration_type" name="integration_type" required>
+						<option value="api-model"    <?php selected( $f('integration_type'), 'api-model' ); ?>><?php esc_html_e( 'API Model', 'ai-governance-suite' ); ?></option>
+						<option value="on-prem"      <?php selected( $f('integration_type'), 'on-prem' ); ?>><?php esc_html_e( 'On-prem', 'ai-governance-suite' ); ?></option>
+						<option value="custom-agent" <?php selected( $f('integration_type'), 'custom-agent' ); ?>><?php esc_html_e( 'Custom Agent', 'ai-governance-suite' ); ?></option>
 					</select>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="environment"><?php esc_html_e( 'Environment', 'ai-governance-suite' ); ?></label></th>
+				<th scope="row"><label for="model_version"><?php esc_html_e( 'Model Version', 'ai-governance-suite' ); ?></label></th>
 				<td>
-					<select id="environment" name="environment">
-						<option value="development" <?php selected( $f('environment'), 'development' ); ?>><?php esc_html_e( 'Development', 'ai-governance-suite' ); ?></option>
-						<option value="staging"     <?php selected( $f('environment'), 'staging' ); ?>><?php esc_html_e( 'Staging', 'ai-governance-suite' ); ?></option>
-						<option value="production"  <?php selected( $f('environment'), 'production' ); ?>><?php esc_html_e( 'Production', 'ai-governance-suite' ); ?></option>
-					</select>
+					<input type="text" id="model_version" name="model_version" class="regular-text"
+						value="<?php echo esc_attr( $f('model_version') ); ?>">
 				</td>
 			</tr>
 			<tr>
@@ -87,29 +85,36 @@ $f = fn( string $key ) => $item[ $key ] ?? '';
 				<td>
 					<select id="status" name="status">
 						<option value="active"   <?php selected( $f('status'), 'active' ); ?>><?php esc_html_e( 'Active', 'ai-governance-suite' ); ?></option>
-						<option value="inactive" <?php selected( $f('status'), 'inactive' ); ?>><?php esc_html_e( 'Inactive', 'ai-governance-suite' ); ?></option>
+						<option value="deprecated" <?php selected( $f('status'), 'deprecated' ); ?>><?php esc_html_e( 'Deprecated', 'ai-governance-suite' ); ?></option>
+						<option value="under-review" <?php selected( $f('status'), 'under-review' ); ?>><?php esc_html_e( 'Under Review', 'ai-governance-suite' ); ?></option>
 					</select>
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="max_tokens"><?php esc_html_e( 'Max Tokens', 'ai-governance-suite' ); ?></label></th>
-				<td><input type="number" id="max_tokens" name="max_tokens" class="small-text" min="0"
-					value="<?php echo esc_attr( $f('max_tokens') ); ?>"></td>
+				<th scope="row"><label for="api_endpoint"><?php esc_html_e( 'API Endpoint', 'ai-governance-suite' ); ?></label></th>
+				<td><input type="url" id="api_endpoint" name="api_endpoint" class="regular-text"
+					value="<?php echo esc_attr( $f('api_endpoint') ); ?>"></td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="context_window"><?php esc_html_e( 'Context Window', 'ai-governance-suite' ); ?></label></th>
-				<td><input type="number" id="context_window" name="context_window" class="small-text" min="0"
-					value="<?php echo esc_attr( $f('context_window') ); ?>"></td>
+				<th scope="row"><label for="data_categories"><?php esc_html_e( 'Data Categories', 'ai-governance-suite' ); ?></label></th>
+				<td><input type="text" id="data_categories" name="data_categories" class="regular-text"
+					value="<?php echo esc_attr( $f('data_categories') ); ?>">
+				<p class="description"><?php esc_html_e( 'Comma-separated categories such as customer_messages,policy_documents.', 'ai-governance-suite' ); ?></p></td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="cost_per_1k_input"><?php esc_html_e( 'Cost / 1K Input Tokens (USD)', 'ai-governance-suite' ); ?></label></th>
-				<td><input type="number" id="cost_per_1k_input" name="cost_per_1k_input" step="0.00001" min="0" class="small-text"
-					value="<?php echo esc_attr( $f('cost_per_1k_input') ); ?>"></td>
+				<th scope="row"><label for="risk_level"><?php esc_html_e( 'Risk Level', 'ai-governance-suite' ); ?></label></th>
+				<td>
+					<select id="risk_level" name="risk_level">
+						<option value="low" <?php selected( $f('risk_level'), 'low' ); ?>><?php esc_html_e( 'Low', 'ai-governance-suite' ); ?></option>
+						<option value="medium" <?php selected( $f('risk_level'), 'medium' ); ?>><?php esc_html_e( 'Medium', 'ai-governance-suite' ); ?></option>
+						<option value="high" <?php selected( $f('risk_level'), 'high' ); ?>><?php esc_html_e( 'High', 'ai-governance-suite' ); ?></option>
+					</select>
+				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="cost_per_1k_output"><?php esc_html_e( 'Cost / 1K Output Tokens (USD)', 'ai-governance-suite' ); ?></label></th>
-				<td><input type="number" id="cost_per_1k_output" name="cost_per_1k_output" step="0.00001" min="0" class="small-text"
-					value="<?php echo esc_attr( $f('cost_per_1k_output') ); ?>"></td>
+				<th scope="row"><label for="owner_user_id"><?php esc_html_e( 'Owner User ID', 'ai-governance-suite' ); ?></label></th>
+				<td><input type="number" id="owner_user_id" name="owner_user_id" class="small-text" min="0"
+					value="<?php echo esc_attr( $f('owner_user_id') ); ?>"></td>
 			</tr>
 			<tr>
 				<th scope="row"><label for="notes"><?php esc_html_e( 'Notes', 'ai-governance-suite' ); ?></label></th>
