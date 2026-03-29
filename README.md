@@ -1,7 +1,7 @@
 # AIGIS: The AI Governance and Infrastructure Suite
 
-> **⚠️ Beta — Active Development — Testing Phase**  
-> This plugin is in early beta. APIs, database schemas, and admin UI may change between versions without notice. Not recommended for production use yet. Feedback, bug reports, and pull requests are very welcome.
+**⚠️ Beta — Active Development — Testing Phase**  
+This plugin is in early beta. APIs, database schemas, and admin UI may change between versions without notice. Not recommended for production use yet. Feedback, bug reports, and pull requests are very welcome.
 
 ---
 
@@ -52,7 +52,7 @@ AIGIS is a comprehensive WordPress plugin that brings enterprise-grade AI govern
 
 ---
 
-## Plugin Structure
+## Repository Structure
 
 ```
 ai-governance-suite/
@@ -61,16 +61,28 @@ ai-governance-suite/
 │   ├── js/                     # Admin JS (aigis-admin.js, aigis-charts.js, aigis-workflow-diagram.js)
 │   │   └── vendor/             # chart.umd.min.js, mermaid.min.js (not in repo — see Requirements)
 │   └── views/                  # PHP view templates (one folder per admin area)
+├── docs/
+│   ├── development/            # Dev journal and implementation notes
+│   ├── reference/              # Repo-only reference material
+│   └── specifications/         # Project specification and planning docs
 ├── includes/
+│   ├── core/                   # Bootstrap, loader, activator, deactivator, orchestrator
 │   ├── admin/                  # Admin page controllers (AIGIS_Page_*)
 │   ├── api/                    # REST API controllers (AIGIS_REST_*)
 │   ├── cpt/                    # Custom Post Type classes (AIGIS_CPT_*)
 │   ├── db/                     # Database abstraction layer (AIGIS_DB_*)
 │   ├── helpers/                # Capabilities, PII detector, notifications, cron, test data
 │   └── providers/              # AI provider adapters (OpenAI, Anthropic, Ollama)
+├── tests/                      # Placeholder for automated test coverage
 ├── ai-governance-suite.php     # Plugin bootstrap
 └── uninstall.php               # Clean uninstall (drops all DB tables and options)
 ```
+
+### Layout notes
+
+- Runtime plugin code stays in `admin/` and `includes/` so the WordPress load path remains simple.
+- Repository-only material lives in `docs/` instead of a hidden scratch directory.
+- Core bootstrapping classes are grouped in `includes/core/` to separate framework wiring from feature code.
 
 ---
 

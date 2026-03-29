@@ -28,9 +28,9 @@ define( 'AIGIS_TEXT_DOMAIN', 'ai-governance-suite' );
  * Load required core files.
  */
 function aigis_load_dependencies(): void {
-	require_once AIGIS_PLUGIN_DIR . 'includes/class-aigis-loader.php';
-	require_once AIGIS_PLUGIN_DIR . 'includes/class-aigis-activator.php';
-	require_once AIGIS_PLUGIN_DIR . 'includes/class-aigis-deactivator.php';
+	require_once AIGIS_PLUGIN_DIR . 'includes/core/class-aigis-loader.php';
+	require_once AIGIS_PLUGIN_DIR . 'includes/core/class-aigis-activator.php';
+	require_once AIGIS_PLUGIN_DIR . 'includes/core/class-aigis-deactivator.php';
 
 	// Helpers (loaded early — other classes depend on them)
 	require_once AIGIS_PLUGIN_DIR . 'includes/helpers/class-aigis-capabilities.php';
@@ -81,7 +81,7 @@ function aigis_load_dependencies(): void {
 	}
 
 	// Main plugin orchestrator (loaded last)
-	require_once AIGIS_PLUGIN_DIR . 'includes/class-aigis-plugin.php';
+	require_once AIGIS_PLUGIN_DIR . 'includes/core/class-aigis-plugin.php';
 }
 
 /**
