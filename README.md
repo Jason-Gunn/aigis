@@ -61,10 +61,6 @@ ai-governance-suite/
 │   ├── js/                     # Admin JS (aigis-admin.js, aigis-charts.js, aigis-workflow-diagram.js)
 │   │   └── vendor/             # chart.umd.min.js, mermaid.min.js (not in repo; see Requirements)
 │   └── views/                  # PHP view templates (one folder per admin area)
-├── docs/
-│   ├── development/            # Dev journal and implementation notes
-│   ├── reference/              # Repo-only reference material
-│   └── specifications/         # Project specification and planning docs
 ├── includes/
 │   ├── core/                   # Bootstrap, loader, activator, deactivator, orchestrator
 │   ├── admin/                  # Admin page controllers (AIGIS_Page_*)
@@ -81,8 +77,8 @@ ai-governance-suite/
 ### Layout notes
 
 - Runtime plugin code stays in `admin/` and `includes/` so the WordPress load path remains simple.
-- Repository-only material lives in `docs/` instead of a hidden scratch directory.
 - Core bootstrapping classes are grouped in `includes/core/` to separate framework wiring from feature code.
+- Local notes and scratch material can live in `_resources/`, which is gitignored and not committed.
 
 ---
 
