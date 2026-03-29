@@ -2,6 +2,9 @@
 # AIGIS — AI Governance and Infrastructure Suite for WordPress
 # ============================================================
 
+# --- Local scratch resources (keep out of repo) ---
+_resources/
+
 # --- Vendor JS (large minified files committed separately) ---
 # Uncomment if you supply vendor files via a build step rather than committing them:
 # admin/js/vendor/
