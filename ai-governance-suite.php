@@ -3,7 +3,7 @@
  * Plugin Name:       AI Governance & Infrastructure Suite
  * Plugin URI:        https://example.com/ai-governance-suite
  * Description:       A comprehensive AI governance platform for managing, auditing, and continuously improving your organization's use of AI systems.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Your Organization
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'AIGIS_VERSION',    '1.0.0' );
+define( 'AIGIS_VERSION',    '1.1.0' );
 define( 'AIGIS_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AIGIS_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'AIGIS_PLUGIN_FILE', __FILE__ );
@@ -48,6 +48,7 @@ function aigis_load_dependencies(): void {
 
 	// Custom Post Types
 	require_once AIGIS_PLUGIN_DIR . 'includes/cpt/class-aigis-cpt-prompt.php';
+	require_once AIGIS_PLUGIN_DIR . 'includes/cpt/class-aigis-cpt-skill.php';
 	require_once AIGIS_PLUGIN_DIR . 'includes/cpt/class-aigis-cpt-policy.php';
 	require_once AIGIS_PLUGIN_DIR . 'includes/cpt/class-aigis-cpt-workflow.php';
 	require_once AIGIS_PLUGIN_DIR . 'includes/cpt/class-aigis-cpt-incident.php';
@@ -62,6 +63,7 @@ function aigis_load_dependencies(): void {
 	require_once AIGIS_PLUGIN_DIR . 'includes/api/class-aigis-rest-controller.php';
 	require_once AIGIS_PLUGIN_DIR . 'includes/api/class-aigis-rest-log.php';
 	require_once AIGIS_PLUGIN_DIR . 'includes/api/class-aigis-rest-routing.php';
+	require_once AIGIS_PLUGIN_DIR . 'includes/api/class-aigis-rest-skills.php';
 	require_once AIGIS_PLUGIN_DIR . 'includes/api/class-aigis-rest-guardrail.php';
 	require_once AIGIS_PLUGIN_DIR . 'includes/api/class-aigis-rest-eval.php';
 

@@ -38,7 +38,7 @@ class AIGIS_CPT_Prompt {
 			'add_new_item'          => __( 'Add New Prompt', 'ai-governance-suite' ),
 			'edit_item'             => __( 'Edit Prompt', 'ai-governance-suite' ),
 			'new_item'              => __( 'New Prompt', 'ai-governance-suite' ),
-			'all_items'             => __( 'All Prompts', 'ai-governance-suite' ),
+			'all_items'             => __( 'Prompts', 'ai-governance-suite' ),
 			'view_item'             => __( 'View Prompt', 'ai-governance-suite' ),
 			'search_items'          => __( 'Search Prompts', 'ai-governance-suite' ),
 			'not_found'             => __( 'No prompts found.', 'ai-governance-suite' ),

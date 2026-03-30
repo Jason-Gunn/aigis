@@ -154,6 +154,7 @@ class AIGIS_Admin {
 			'nonces'  => [
 				'sandboxTest'       => wp_create_nonce( 'aigis_sandbox_test' ),
 				'promotePrompt'     => wp_create_nonce( 'aigis_promote_prompt' ),
+				'skillStatus'       => wp_create_nonce( 'aigis_change_skill_status' ),
 				'policyStatus'      => wp_create_nonce( 'aigis_policy_status' ),
 				'incidentStatus'    => wp_create_nonce( 'aigis_incident_status' ),
 				'inboxUnreadCount'  => wp_create_nonce( 'aigis_inbox_unread_count' ),
@@ -163,6 +164,8 @@ class AIGIS_Admin {
 			],
 			'i18n'    => [
 				'confirm_delete'           => __( 'Are you sure you want to delete this item?', 'ai-governance-suite' ),
+				'confirmSkillStatus'       => __( 'Change this skill status?', 'ai-governance-suite' ),
+				'skillStatusNotePrompt'    => __( 'Optional transition note:', 'ai-governance-suite' ),
 				'saving'                   => __( 'Saving…', 'ai-governance-suite' ),
 				'testing'                  => __( 'Running test…', 'ai-governance-suite' ),
 				'confirmGenerateTestData'  => __( 'Generate sample data for all sections? This will populate every section of the plugin with realistic test records.', 'ai-governance-suite' ),
@@ -307,7 +310,7 @@ class AIGIS_Admin {
 		global $wpdb;
 
 		// 1. Delete all AIGIS CPT posts.
-		$post_types = [ 'aigis_prompt', 'aigis_policy', 'aigis_workflow', 'aigis_incident' ];
+		$post_types = [ 'aigis_prompt', 'aigis_policy', 'aigis_workflow', 'aigis_incident', 'aigis_skill' ];
 		$post_count = 0;
 		foreach ( $post_types as $pt ) {
 			$ids = get_posts( [ 'post_type' => $pt, 'numberposts' => -1, 'post_status' => 'any', 'fields' => 'ids' ] );

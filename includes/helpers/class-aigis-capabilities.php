@@ -27,6 +27,12 @@ class AIGIS_Capabilities {
 	const APPROVE_PROMPTS      = 'aigis_approve_prompts';
 	const USE_PROMPTS          = 'aigis_use_prompts';
 
+	// Skill management
+	const MANAGE_SKILLS        = 'aigis_manage_skills';
+	const APPROVE_SKILLS       = 'aigis_approve_skills';
+	const USE_SKILLS           = 'aigis_use_skills';
+	const VIEW_SKILLS          = 'aigis_view_skills';
+
 	// Policy management
 	const MANAGE_POLICIES      = 'aigis_manage_policies';
 	const APPROVE_POLICIES     = 'aigis_approve_policies';
@@ -80,6 +86,10 @@ class AIGIS_Capabilities {
 					self::MANAGE_PROMPTS,
 					self::APPROVE_PROMPTS,
 					self::USE_PROMPTS,
+					self::MANAGE_SKILLS,
+					self::APPROVE_SKILLS,
+					self::USE_SKILLS,
+					self::VIEW_SKILLS,
 					self::MANAGE_POLICIES,
 					self::APPROVE_POLICIES,
 					self::VIEW_POLICIES,
@@ -103,6 +113,9 @@ class AIGIS_Capabilities {
 					self::VIEW_AI_INVENTORY,
 					self::MANAGE_PROMPTS,
 					self::USE_PROMPTS,
+					self::MANAGE_SKILLS,
+					self::USE_SKILLS,
+					self::VIEW_SKILLS,
 					self::VIEW_POLICIES,
 					self::MANAGE_WORKFLOWS,
 					self::VIEW_WORKFLOWS,
@@ -119,6 +132,8 @@ class AIGIS_Capabilities {
 					'read',
 					self::VIEW_AI_INVENTORY,
 					self::APPROVE_PROMPTS,
+					self::APPROVE_SKILLS,
+					self::VIEW_SKILLS,
 					self::VIEW_POLICIES,
 					self::VIEW_WORKFLOWS,
 					self::VIEW_INCIDENTS,
@@ -142,6 +157,10 @@ class AIGIS_Capabilities {
 			self::MANAGE_PROMPTS,
 			self::APPROVE_PROMPTS,
 			self::USE_PROMPTS,
+			self::MANAGE_SKILLS,
+			self::APPROVE_SKILLS,
+			self::USE_SKILLS,
+			self::VIEW_SKILLS,
 			self::MANAGE_POLICIES,
 			self::APPROVE_POLICIES,
 			self::VIEW_POLICIES,

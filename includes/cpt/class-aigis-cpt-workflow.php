@@ -24,7 +24,7 @@ class AIGIS_CPT_Workflow {
 			'add_new'            => __( 'Add New Workflow', 'ai-governance-suite' ),
 			'add_new_item'       => __( 'Add New Workflow', 'ai-governance-suite' ),
 			'edit_item'          => __( 'Edit Workflow', 'ai-governance-suite' ),
-			'all_items'          => __( 'All Workflows', 'ai-governance-suite' ),
+			'all_items'          => __( 'Workflows', 'ai-governance-suite' ),
 			'search_items'       => __( 'Search Workflows', 'ai-governance-suite' ),
 			'not_found'          => __( 'No workflows found.', 'ai-governance-suite' ),
 			'not_found_in_trash' => __( 'No workflows found in Trash.', 'ai-governance-suite' ),

@@ -28,7 +28,7 @@ class AIGIS_CPT_Incident {
 			'add_new'            => __( 'Add New Incident', 'ai-governance-suite' ),
 			'add_new_item'       => __( 'Add New Incident', 'ai-governance-suite' ),
 			'edit_item'          => __( 'Edit Incident', 'ai-governance-suite' ),
-			'all_items'          => __( 'All Incidents', 'ai-governance-suite' ),
+			'all_items'          => __( 'Incidents', 'ai-governance-suite' ),
 			'search_items'       => __( 'Search Incidents', 'ai-governance-suite' ),
 			'not_found'          => __( 'No incidents found.', 'ai-governance-suite' ),
 			'not_found_in_trash' => __( 'No incidents found in Trash.', 'ai-governance-suite' ),

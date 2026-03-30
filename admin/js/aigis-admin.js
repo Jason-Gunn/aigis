@@ -128,6 +128,44 @@
 	} );
 
 	// -----------------------------------------------------------------------
+	// Skill review actions
+	// -----------------------------------------------------------------------
+	$( document ).on( 'click', '.aigis-skill-transition-btn', function () {
+		const $btn      = $( this );
+		const postId    = $btn.data( 'post' );
+		const newStatus = $btn.data( 'status' );
+		const label     = $btn.data( 'label' ) || newStatus;
+		let note        = '';
+
+		if ( ! confirm( i18n.confirmSkillStatus || 'Change this skill status?' ) ) {
+			return;
+		}
+
+		note = window.prompt( i18n.skillStatusNotePrompt || 'Optional transition note:', '' ) || '';
+		$btn.prop( 'disabled', true );
+
+		$.post( ajaxUrl, {
+			action    : 'aigis_change_skill_status',
+			nonce     : nonces.skillStatus,
+			post_id   : postId,
+			new_status: newStatus,
+			note      : note,
+		} )
+		.done( function ( res ) {
+			if ( res.success ) {
+				location.reload();
+			} else {
+				alert( res.data || i18n.error || 'Error.' );
+				$btn.prop( 'disabled', false );
+			}
+		} )
+		.fail( function () {
+			alert( i18n.networkError || 'Network error.' );
+			$btn.prop( 'disabled', false );
+		} );
+	} );
+
+	// -----------------------------------------------------------------------
 	// Policy / incident status changes
 	// -----------------------------------------------------------------------
 	$( document ).on( 'click', '.aigis-status-btn', function () {

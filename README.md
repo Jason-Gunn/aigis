@@ -15,6 +15,7 @@ AIGIS is a comprehensive WordPress plugin that brings enterprise-grade AI govern
 |---|---|
 | **AI Inventory** | Central registry of every AI model, vendor, and integration in use |
 | **Prompt Library** | Version-controlled prompts with sandbox testing and one-click promotion |
+| **Skills Repository** | Governed agent skills with readiness scoring, lifecycle review, markdown import/export, and linked governance assets |
 | **Policy Management** | Formal AI-use policies with approval workflows and expiry tracking |
 | **Workflow Designer** | Visual Mermaid-powered diagrams for documenting AI workflows |
 | **Incident Tracking** | CPT-based incident log with status transitions and linked policies |
@@ -90,8 +91,20 @@ All endpoints live under `/wp-json/ai-governance/v1/` and require an `X-AIGIS-AP
 |---|---|---|
 | `POST` | `/log` | Log an AI usage event |
 | `GET` | `/routing` | Get model routing rules |
+| `GET` | `/skills` | List approved skills for runtime and integration use |
+| `GET` | `/skills/{slug-or-id}` | Fetch a single approved skill with relationships and markdown export |
 | `POST` | `/guardrail/check` | Check a prompt against guardrails (PII detection etc.) |
 | `POST` | `/eval` | Submit an evaluation result |
+
+### Skills module highlights
+
+- New `Agent Skills` custom post type for reusable agent capabilities
+- Structured specification fields for description, trigger phrases, output contract, edge cases, examples, team, and output format
+- Lifecycle workflow spanning Draft, Pending Review, Staging, and Production
+- Readiness scoring to surface missing structure before production approval
+- Markdown round-trip export/import for external review and bulk editing
+- Relationship mapping to prompts, workflows, policies, incidents, and linked inventory records
+- Read-only REST access to approved skills for runtime integration
 
 ---
 
@@ -106,6 +119,10 @@ AIGIS adds a dedicated set of capabilities and assigns them to WordPress roles o
 | `aigis_view_analytics` | ✅ | ✅ |
 | `aigis_view_costs` | ✅ | No |
 | `aigis_manage_budgets` | ✅ | No |
+| `aigis_manage_skills` | ✅ | No |
+| `aigis_approve_skills` | ✅ | No |
+| `aigis_use_skills` | ✅ | No |
+| `aigis_view_skills` | ✅ | ✅ |
 | `aigis_manage_policies` | ✅ | No |
 | `aigis_manage_workflows` | ✅ | ✅ |
 | `aigis_manage_incidents` | ✅ | ✅ |
@@ -120,7 +137,15 @@ AIGIS adds a dedicated set of capabilities and assigns them to WordPress roles o
 
 ### Generating test data
 
-In WordPress admin go to **AI Governance → Settings → Developer Tools** and click **Generate Test Data**. This populates every section of the plugin with realistic sample records. Use **Purge Test Data** to remove them cleanly.
+In WordPress admin go to **AI Governance → Settings → Developer Tools** and click **Generate Test Data**. This populates every section of the plugin with realistic sample records, including skills linked to prompts, workflows, policies, incidents, and inventory records. Use **Purge Test Data** to remove them cleanly.
+
+### Release 1.1.0
+
+- Added the new `Agent Skills` module with custom capabilities and governed lifecycle management
+- Added skill readiness validation, relationship mapping, and review actions in the admin
+- Added markdown import/export for skills and seeded skill test data in Developer Tools
+- Added approved-skills REST endpoints for integration and runtime consumption
+- Updated settings and reference manuals to document the new module
 
 ### Running a PHP lint check inside Docker
 

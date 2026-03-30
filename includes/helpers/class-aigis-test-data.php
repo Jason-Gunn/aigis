@@ -56,6 +56,7 @@ class AIGIS_Test_Data {
 
 		// Database table rows.
 		[ $counts['inventory'],    $db_ids['inventory'] ]    = self::insert_inventory();
+		$counts['skills'] = self::create_skill_posts( $db_ids['inventory'] );
 		[ $counts['usage_logs'],   $db_ids['usage_logs'] ]   = self::insert_usage_logs( $db_ids['inventory'] );
 		[ $counts['audit'],        $db_ids['audit'] ]        = self::insert_audit_trail();
 		[ $counts['cost_budgets'], $db_ids['cost_budgets'] ] = self::insert_cost_budgets( $db_ids['inventory'] );
@@ -142,6 +143,7 @@ class AIGIS_Test_Data {
 			'policies'  => 'aigis_policy',
 			'workflows' => 'aigis_workflow',
 			'incidents' => 'aigis_incident',
+			'skills'    => 'aigis_skill',
 		];
 
 		foreach ( $post_type_map as $label => $post_type ) {
@@ -343,6 +345,88 @@ class AIGIS_Test_Data {
 		] );
 	}
 
+	private static function create_skill_posts( array $inventory_ids ): int {
+		$prompt_ids   = self::get_test_post_ids_by_title( 'aigis_prompt' );
+		$policy_ids   = self::get_test_post_ids_by_title( 'aigis_policy' );
+		$workflow_ids = self::get_test_post_ids_by_title( 'aigis_workflow' );
+		$incident_ids = self::get_test_post_ids_by_title( 'aigis_incident' );
+
+		return self::insert_posts( 'aigis_skill', [
+			[
+				'title'   => '[TEST] Complaint Triage & Escalation Skill',
+				'content' => "Classify incoming customer complaints by severity, identify regulated issues that require human review, and produce a concise escalation brief for the support queue.\n\nPrioritise privacy, financial harm, and service outage indicators. If the issue implies legal exposure or a vulnerable customer, recommend immediate handoff instead of automation.",
+				'status'  => 'publish',
+				'meta'    => [
+					'_aigis_skill_description'      => 'Routes sensitive customer complaints into the right escalation lane with a concise action brief.',
+					'_aigis_skill_tier'             => 'operational',
+					'_aigis_skill_version'          => '1.0.0',
+					'_aigis_skill_trigger_phrases'  => "customer complaint\nescalate refund case\nservice outage complaint\nregulatory complaint",
+					'_aigis_skill_output_contract'  => "Return markdown with sections: Severity, Risk Flags, Recommended Owner, Escalation Summary, Next Action.",
+					'_aigis_skill_edge_cases'       => "If the complaint includes minors, medical content, legal threats, or requested compensation over policy thresholds, require human escalation.\nIf the complaint lacks facts, request clarification before triage.",
+					'_aigis_skill_examples'         => "Input: 'Customer says they were double billed and threatens to report us.'\nOutput: Severity high, risk flags financial_dispute and legal_threat, owner Billing Ops, next action escalate within 1 hour.",
+					'_aigis_skill_format'           => 'markdown',
+					'_aigis_skill_team'             => 'Customer Operations',
+					'_aigis_linked_inventory_id'    => $inventory_ids[0] ?? 0,
+					'_aigis_linked_prompt_ids'      => array_values( array_filter( [ $prompt_ids['[TEST] Customer Support Reply Generator'] ?? 0 ] ) ),
+					'_aigis_linked_workflow_ids'    => array_values( array_filter( [ $workflow_ids['[TEST] Customer Escalation Workflow'] ?? 0 ] ) ),
+					'_aigis_linked_policy_ids'      => array_values( array_filter( [ $policy_ids['[TEST] Acceptable Use Policy for AI Models'] ?? 0 ] ) ),
+					'_aigis_linked_incident_ids'    => array_values( array_filter( [ $incident_ids['[TEST] PII Detected in Customer Support Output'] ?? 0 ] ) ),
+				],
+				'terms'   => [
+					'aigis_skill_tag' => [ 'support', 'triage', 'regulated' ],
+				],
+			],
+			[
+				'title'   => '[TEST] Policy Comparison Review Skill',
+				'content' => "Compare a proposed operating procedure against current governance policy and produce a reviewer-ready diff summary.\n\nHighlight policy conflicts, missing controls, review owners, and what evidence would be needed before approval.",
+				'status'  => 'aigis-staging',
+				'meta'    => [
+					'_aigis_skill_description'      => 'Summarises gaps between draft operating procedures and current AI governance policies.',
+					'_aigis_skill_tier'             => 'methodology',
+					'_aigis_skill_version'          => '0.9.0',
+					'_aigis_skill_trigger_phrases'  => "compare this SOP to policy\npolicy gap review\nreview governance alignment\nchange-control summary",
+					'_aigis_skill_output_contract'  => "Return markdown sections: Decision, Policy Conflicts, Missing Controls, Required Evidence, Reviewer Notes.",
+					'_aigis_skill_edge_cases'       => "If a policy is draft or in review, note that the comparison is provisional.\nIf the source material conflicts internally, list the ambiguity instead of guessing.",
+					'_aigis_skill_examples'         => "Input: 'Compare the draft onboarding SOP to our acceptable use and privacy policies.'\nOutput: provisional alignment review with cited conflicts and evidence requests.",
+					'_aigis_skill_format'           => 'markdown',
+					'_aigis_skill_team'             => 'Governance Office',
+					'_aigis_linked_inventory_id'    => $inventory_ids[1] ?? 0,
+					'_aigis_linked_prompt_ids'      => array_values( array_filter( [ $prompt_ids['[TEST] Policy Document Summariser'] ?? 0 ] ) ),
+					'_aigis_linked_workflow_ids'    => array_values( array_filter( [ $workflow_ids['[TEST] Model Deployment Approval'] ?? 0 ] ) ),
+					'_aigis_linked_policy_ids'      => array_values( array_filter( [ $policy_ids['[TEST] Acceptable Use Policy for AI Models'] ?? 0, $policy_ids['[TEST] Data Privacy Policy for AI Processing'] ?? 0 ] ) ),
+					'_aigis_linked_incident_ids'    => [],
+				],
+				'terms'   => [
+					'aigis_skill_tag' => [ 'policy', 'review', 'compliance' ],
+				],
+			],
+			[
+				'title'   => '[TEST] Secure Code Review Escalation Skill',
+				'content' => "Review a code diff for security issues, identify whether the finding is advisory or release-blocking, and hand off unresolved issues to incident response when exploitability is credible.\n\nPrefer concrete remediation guidance over generic warnings. If the code touches auth, secrets, or PII handling, increase scrutiny.",
+				'status'  => 'aigis-pending-review',
+				'meta'    => [
+					'_aigis_skill_description'      => 'Turns raw code review findings into release decisions and incident-response handoffs.',
+					'_aigis_skill_tier'             => 'operational',
+					'_aigis_skill_version'          => '0.4.0',
+					'_aigis_skill_trigger_phrases'  => "review this diff for security\nrelease-blocking vulnerability\nexploitability review\ntriage code finding",
+					'_aigis_skill_output_contract'  => "Return markdown sections: Risk Rating, Blocking Decision, Evidence, Remediation, Escalation Path.",
+					'_aigis_skill_edge_cases'       => "If exploitability is uncertain, classify as review-required instead of safe.\nIf the diff lacks context, request the surrounding files before making a release decision.",
+					'_aigis_skill_examples'         => "Input: 'Review this auth diff that changes token validation.'\nOutput: high-risk finding with blocking decision and remediation tasks.",
+					'_aigis_skill_format'           => 'markdown',
+					'_aigis_skill_team'             => 'Security Engineering',
+					'_aigis_linked_inventory_id'    => $inventory_ids[2] ?? 0,
+					'_aigis_linked_prompt_ids'      => array_values( array_filter( [ $prompt_ids['[TEST] Code Security Review Assistant'] ?? 0 ] ) ),
+					'_aigis_linked_workflow_ids'    => array_values( array_filter( [ $workflow_ids['[TEST] Incident Response Workflow'] ?? 0 ] ) ),
+					'_aigis_linked_policy_ids'      => array_values( array_filter( [ $policy_ids['[TEST] Acceptable Use Policy for AI Models'] ?? 0 ] ) ),
+					'_aigis_linked_incident_ids'    => array_values( array_filter( [ $incident_ids['[TEST] Prompt Injection Attempt Blocked'] ?? 0 ] ) ),
+				],
+				'terms'   => [
+					'aigis_skill_tag' => [ 'security', 'code-review', 'incident' ],
+				],
+			],
+		] );
+	}
+
 	/**
 	 * Insert CPT posts and tag each with test-data meta.
 	 */
@@ -365,6 +449,10 @@ class AIGIS_Test_Data {
 
 			foreach ( ( $data['meta'] ?? [] ) as $key => $value ) {
 				update_post_meta( $post_id, $key, $value );
+			}
+
+			foreach ( ( $data['terms'] ?? [] ) as $taxonomy => $terms ) {
+				wp_set_object_terms( $post_id, array_values( array_filter( (array) $terms ) ), $taxonomy, false );
 			}
 
 			$count++;
@@ -529,16 +617,25 @@ class AIGIS_Test_Data {
 	 * @return array<string,int>
 	 */
 	private static function get_test_prompt_ids(): array {
-		$map = [];
-		$prompts = get_posts( [
-			'post_type'      => 'aigis_prompt',
+		return self::get_test_post_ids_by_title( 'aigis_prompt' );
+	}
+
+	/**
+	 * Map built-in test post titles to their post IDs for a given post type.
+	 *
+	 * @return array<string,int>
+	 */
+	private static function get_test_post_ids_by_title( string $post_type ): array {
+		$map   = [];
+		$posts = get_posts( [
+			'post_type'      => $post_type,
 			'post_status'    => 'any',
 			'posts_per_page' => -1,
 			'fields'         => 'ids',
 		] );
 
-		foreach ( $prompts as $prompt_id ) {
-			$map[ get_the_title( $prompt_id ) ] = (int) $prompt_id;
+		foreach ( $posts as $post_id ) {
+			$map[ get_the_title( $post_id ) ] = (int) $post_id;
 		}
 
 		return $map;
@@ -784,7 +881,7 @@ class AIGIS_Test_Data {
 
 	private static function delete_test_posts(): int {
 		$deleted    = 0;
-		$post_types = [ 'aigis_prompt', 'aigis_policy', 'aigis_workflow', 'aigis_incident' ];
+		$post_types = [ 'aigis_prompt', 'aigis_policy', 'aigis_workflow', 'aigis_incident', 'aigis_skill' ];
 
 		foreach ( $post_types as $pt ) {
 			$q = new WP_Query( [

@@ -16,6 +16,7 @@ $tabs = [
 	'prompts'        => __( 'Prompts',                'ai-governance-suite' ),
 	'policies'       => __( 'Policies',               'ai-governance-suite' ),
 	'workflows'      => __( 'Workflows',              'ai-governance-suite' ),
+	'skills'         => __( 'Skills',                 'ai-governance-suite' ),
 	'incidents'      => __( 'Incidents',              'ai-governance-suite' ),
 	'analytics'      => __( 'Analytics &amp; Cost',   'ai-governance-suite' ),
 	'evaluation'     => __( 'Stress Tests &amp; Eval','ai-governance-suite' ),
@@ -63,6 +64,7 @@ if ( ! array_key_exists( $active_tab, $tabs ) ) {
 			<li><?php esc_html_e( 'Tracks prompt usage, token consumption, latency, and costs across departments and projects.', 'ai-governance-suite' ); ?></li>
 			<li><?php esc_html_e( 'Manages AI policies, their lifecycle states, and their enforce-by dates.', 'ai-governance-suite' ); ?></li>
 			<li><?php esc_html_e( 'Documents approved AI workflows using Mermaid diagrams for visual clarity.', 'ai-governance-suite' ); ?></li>
+			<li><?php esc_html_e( 'Stores reusable agent skills with readiness scoring, lifecycle review, markdown import/export, and links to prompts, workflows, policies, incidents, and inventory records.', 'ai-governance-suite' ); ?></li>
 			<li><?php esc_html_e( 'Logs incidents — from PII leakage to prompt injection attempts — and tracks their investigation status.', 'ai-governance-suite' ); ?></li>
 			<li><?php esc_html_e( 'Enforces real-time guardrails that block harmful, injected, or policy-violating inputs and outputs.', 'ai-governance-suite' ); ?></li>
 			<li><?php esc_html_e( 'Runs stress tests and evaluates AI outputs against expected results, including false-negative detection.', 'ai-governance-suite' ); ?></li>
@@ -73,7 +75,7 @@ if ( ! array_key_exists( $active_tab, $tabs ) ) {
 		<h3><?php esc_html_e( 'Architecture', 'ai-governance-suite' ); ?></h3>
 		<p><?php esc_html_e( 'AIGIS is structured around four main layers:', 'ai-governance-suite' ); ?></p>
 		<ol>
-			<li><strong><?php esc_html_e( 'Custom Post Types', 'ai-governance-suite' ); ?></strong> — <?php esc_html_e( 'Prompts, Policies, Workflows, and Incidents are first-class WordPress content objects, stored in the standard posts table.', 'ai-governance-suite' ); ?></li>
+			<li><strong><?php esc_html_e( 'Custom Post Types', 'ai-governance-suite' ); ?></strong> — <?php esc_html_e( 'Prompts, Policies, Workflows, Skills, and Incidents are first-class WordPress content objects, stored in the standard posts table.', 'ai-governance-suite' ); ?></li>
 			<li><strong><?php esc_html_e( 'Custom Database Tables', 'ai-governance-suite' ); ?></strong> — <?php esc_html_e( 'High-volume structured data (usage logs, audit trail, inventory, cost budgets, evaluation results, guardrail triggers) lives in dedicated tables for query performance.', 'ai-governance-suite' ); ?></li>
 			<li><strong><?php esc_html_e( 'Admin Interface', 'ai-governance-suite' ); ?></strong> — <?php esc_html_e( 'A full WordPress admin menu with dedicated pages for each section, role-based access, and a unified dashboard.', 'ai-governance-suite' ); ?></li>
 			<li><strong><?php esc_html_e( 'REST API', 'ai-governance-suite' ); ?></strong> — <?php esc_html_e( 'A secured API layer for external agents, pipelines, and integration scripts to submit logs, check routing, test guardrails, and submit evaluations.', 'ai-governance-suite' ); ?></li>
@@ -88,6 +90,7 @@ if ( ! array_key_exists( $active_tab, $tabs ) ) {
 				<tr><td><strong><?php esc_html_e( 'Guardrail', 'ai-governance-suite' ); ?></strong></td><td><?php esc_html_e( 'A real-time input/output check that can block a request. Guardrail triggers are logged for review.', 'ai-governance-suite' ); ?></td></tr>
 				<tr><td><strong><?php esc_html_e( 'Evaluation', 'ai-governance-suite' ); ?></strong></td><td><?php esc_html_e( 'A structured comparison of expected vs actual AI output, scored as pass / fail / pending-review. False negatives are flagged separately.', 'ai-governance-suite' ); ?></td></tr>
 				<tr><td><strong><?php esc_html_e( 'Prompt Stage', 'ai-governance-suite' ); ?></strong></td><td><?php esc_html_e( 'The lifecycle state of a prompt: development → staging → production. Promotion requires appropriate capability.', 'ai-governance-suite' ); ?></td></tr>
+				<tr><td><strong><?php esc_html_e( 'Skill', 'ai-governance-suite' ); ?></strong></td><td><?php esc_html_e( 'A reusable instruction bundle that captures when an agent should use a capability, what output it should return, and what related assets or safeguards it depends on.', 'ai-governance-suite' ); ?></td></tr>
 				<tr><td><strong><?php esc_html_e( 'Cost Budget', 'ai-governance-suite' ); ?></strong></td><td><?php esc_html_e( 'A spending limit applied to a department, project, or globally, for a monthly or custom period. Alerts fire at 80% and 100%.', 'ai-governance-suite' ); ?></td></tr>
 			</tbody>
 		</table>
@@ -103,7 +106,7 @@ if ( ! array_key_exists( $active_tab, $tabs ) ) {
 		<p><?php esc_html_e( 'Install and activate the AI Governance Suite plugin from the WordPress Plugins screen. On activation, AIGIS automatically:', 'ai-governance-suite' ); ?></p>
 		<ul>
 			<li><?php esc_html_e( 'Creates 6 custom database tables under the wp_ prefix.', 'ai-governance-suite' ); ?></li>
-			<li><?php esc_html_e( 'Registers 4 Custom Post Types (Prompts, Policies, Workflows, Incidents).', 'ai-governance-suite' ); ?></li>
+			<li><?php esc_html_e( 'Registers 5 Custom Post Types (Prompts, Policies, Workflows, Skills, Incidents).', 'ai-governance-suite' ); ?></li>
 			<li><?php esc_html_e( 'Assigns 4 custom roles with granular capabilities.', 'ai-governance-suite' ); ?></li>
 			<li><?php esc_html_e( 'Schedules the cost-budget alert cron job.', 'ai-governance-suite' ); ?></li>
 		</ul>
@@ -123,7 +126,7 @@ if ( ! array_key_exists( $active_tab, $tabs ) ) {
 
 		<h3><?php esc_html_e( '4. Explore with Test Data', 'ai-governance-suite' ); ?></h3>
 		<p><?php esc_html_e( 'You can populate every section of the plugin with realistic sample data to explore the interface without real production records.', 'ai-governance-suite' ); ?></p>
-		<p><?php esc_html_e( 'Go to AI Governance → Settings → Developer Tools and click "Generate Test Data". This creates sample inventory records, prompts, policies, workflows, incidents, usage logs, audit entries, cost budgets, evaluation results, and guardrail triggers.', 'ai-governance-suite' ); ?></p>
+		<p><?php esc_html_e( 'Go to AI Governance → Settings → Developer Tools and click "Generate Test Data". This creates sample inventory records, prompts, policies, workflows, skills, incidents, usage logs, audit entries, cost budgets, evaluation results, and guardrail triggers.', 'ai-governance-suite' ); ?></p>
 		<p><?php esc_html_e( 'Use "Remove Test Data" when you are done exploring. Test data is tracked precisely and will not touch any real records.', 'ai-governance-suite' ); ?></p>
 
 	<?php // ----------------------------------------------------------------
@@ -242,6 +245,45 @@ if ( ! array_key_exists( $active_tab, $tabs ) ) {
 			<li><strong><?php esc_html_e( 'Active:', 'ai-governance-suite' ); ?></strong> <?php esc_html_e( 'Approved for use by the designated teams.', 'ai-governance-suite' ); ?></li>
 			<li><strong><?php esc_html_e( 'Draft:', 'ai-governance-suite' ); ?></strong> <?php esc_html_e( 'Being designed or reviewed.', 'ai-governance-suite' ); ?></li>
 			<li><strong><?php esc_html_e( 'Deprecated:', 'ai-governance-suite' ); ?></strong> <?php esc_html_e( 'Superseded by a newer workflow. Retained for historical reference.', 'ai-governance-suite' ); ?></li>
+		</ul>
+
+	<?php // ----------------------------------------------------------------
+	//  SKILLS
+	// ----------------------------------------------------------------
+	elseif ( 'skills' === $active_tab ) : ?>
+
+		<h2><?php esc_html_e( 'Skills', 'ai-governance-suite' ); ?></h2>
+		<p><?php esc_html_e( 'The Skills module stores reusable agent capabilities as governed instruction assets. Each skill defines when it should be triggered, what output shape it must produce, what edge cases need human judgement, and which prompts, workflows, policies, incidents, and inventory records it depends on.', 'ai-governance-suite' ); ?></p>
+
+		<h3><?php esc_html_e( 'What a Skill Contains', 'ai-governance-suite' ); ?></h3>
+		<ul>
+			<li><?php esc_html_e( 'A short description that explains the trigger and intent of the capability.', 'ai-governance-suite' ); ?></li>
+			<li><?php esc_html_e( 'The main instruction body in the editor, which captures the methodology or procedure the agent should follow.', 'ai-governance-suite' ); ?></li>
+			<li><?php esc_html_e( 'Trigger phrases, output contract, edge cases, examples, format, and owning team metadata.', 'ai-governance-suite' ); ?></li>
+			<li><?php esc_html_e( 'Links to prompts, workflows, policies, incidents, and an optional inventory record for operational context.', 'ai-governance-suite' ); ?></li>
+		</ul>
+
+		<h3><?php esc_html_e( 'Lifecycle and Review', 'ai-governance-suite' ); ?></h3>
+		<p><?php esc_html_e( 'Skills move through Draft, Pending Review, Staging, and Approved. Readiness scoring highlights whether the skill has enough structure to be safely reused in real environments. Missing descriptions, empty instruction bodies, or weak output contracts will lower the score and block production readiness.', 'ai-governance-suite' ); ?></p>
+		<ol>
+			<li><?php esc_html_e( 'Draft the skill with a concrete description, clear trigger phrases, and an explicit output contract.', 'ai-governance-suite' ); ?></li>
+			<li><?php esc_html_e( 'Use Pending Review when another operator needs to verify the methodology, linked assets, and exception handling.', 'ai-governance-suite' ); ?></li>
+			<li><?php esc_html_e( 'Move the skill to Staging while you test it with realistic prompts, workflows, and inventory context.', 'ai-governance-suite' ); ?></li>
+			<li><?php esc_html_e( 'Approve the skill only after the readiness checks are green and the reviewer is satisfied that the instructions are production-safe.', 'ai-governance-suite' ); ?></li>
+		</ol>
+
+		<h3><?php esc_html_e( 'Markdown Import and Export', 'ai-governance-suite' ); ?></h3>
+		<p><?php esc_html_e( 'Each skill can be exported as markdown for external review or versioning. The same markdown can be pasted back into the import box on the skill editor to round-trip changes into WordPress. This is useful when a governance team prefers reviewing structured markdown outside the admin UI before applying edits.', 'ai-governance-suite' ); ?></p>
+
+		<h3><?php esc_html_e( 'Relationship Mapping', 'ai-governance-suite' ); ?></h3>
+		<p><?php esc_html_e( 'Link related prompts, workflows, policies, and incidents whenever the skill depends on them. These references make review easier, improve traceability during incidents, and expose the surrounding governance context when the skill is fetched through the REST API.', 'ai-governance-suite' ); ?></p>
+
+		<h3><?php esc_html_e( 'Best Practices', 'ai-governance-suite' ); ?></h3>
+		<ul>
+			<li><?php esc_html_e( 'Keep the description single-line and specific so routing remains reliable.', 'ai-governance-suite' ); ?></li>
+			<li><?php esc_html_e( 'Treat the output contract as mandatory. Name the exact sections, fields, or format the agent must return.', 'ai-governance-suite' ); ?></li>
+			<li><?php esc_html_e( 'Capture edge cases explicitly instead of assuming reviewers will infer them later.', 'ai-governance-suite' ); ?></li>
+			<li><?php esc_html_e( 'Use markdown export for peer review, but only approve a skill after re-imported content has been validated in the editor.', 'ai-governance-suite' ); ?></li>
 		</ul>
 
 	<?php // ----------------------------------------------------------------

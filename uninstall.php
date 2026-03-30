@@ -17,28 +17,32 @@ global $wpdb;
 
 // --- Remove AIGIS capabilities from all roles ---
 $aigis_capabilities = [
-	'aigis_view_dashboard',
-	'aigis_manage_inventory',
-	'aigis_view_inventory',
+	'aigis_manage_ai_inventory',
+	'aigis_view_ai_inventory',
 	'aigis_manage_prompts',
-	'aigis_review_prompts',
-	'aigis_view_prompts',
+	'aigis_approve_prompts',
+	'aigis_use_prompts',
+	'aigis_manage_skills',
+	'aigis_approve_skills',
+	'aigis_use_skills',
+	'aigis_view_skills',
 	'aigis_manage_policies',
-	'aigis_review_policies',
+	'aigis_approve_policies',
 	'aigis_view_policies',
 	'aigis_manage_workflows',
 	'aigis_view_workflows',
 	'aigis_view_analytics',
+	'aigis_export_data',
+	'aigis_manage_settings',
+	'aigis_manage_api_keys',
+	'aigis_view_audit_log',
+	'aigis_run_stress_tests',
+	'aigis_manage_eval',
+	'aigis_view_eval',
+	'aigis_manage_budgets',
+	'aigis_view_costs',
 	'aigis_manage_incidents',
 	'aigis_view_incidents',
-	'aigis_view_audit_log',
-	'aigis_export_audit_log',
-	'aigis_view_cost',
-	'aigis_manage_cost',
-	'aigis_run_stress_tests',
-	'aigis_view_stress_tests',
-	'aigis_view_eval',
-	'aigis_manage_eval',
 ];
 
 $wp_roles = wp_roles();
@@ -52,7 +56,7 @@ foreach ( $wp_roles->roles as $role_slug => $role_data ) {
 }
 
 // --- Remove the four custom AIGIS roles ---
-$custom_roles = [ 'aigis_admin', 'aigis_analyst', 'aigis_reviewer', 'aigis_viewer' ];
+$custom_roles = [ 'aigis_super_admin', 'aigis_ai_manager', 'aigis_ai_developer', 'aigis_ai_reviewer' ];
 foreach ( $custom_roles as $role_slug ) {
 	remove_role( $role_slug );
 }

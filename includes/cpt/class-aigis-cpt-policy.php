@@ -31,7 +31,7 @@ class AIGIS_CPT_Policy {
 			'add_new'            => __( 'Add New Policy', 'ai-governance-suite' ),
 			'add_new_item'       => __( 'Add New Policy', 'ai-governance-suite' ),
 			'edit_item'          => __( 'Edit Policy', 'ai-governance-suite' ),
-			'all_items'          => __( 'All Policies', 'ai-governance-suite' ),
+			'all_items'          => __( 'Policies', 'ai-governance-suite' ),
 			'search_items'       => __( 'Search Policies', 'ai-governance-suite' ),
 			'not_found'          => __( 'No policies found.', 'ai-governance-suite' ),
 			'not_found_in_trash' => __( 'No policies found in Trash.', 'ai-governance-suite' ),

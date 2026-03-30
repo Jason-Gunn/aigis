@@ -28,6 +28,7 @@ class AIGIS_Plugin {
 
 		// CPTs and taxonomies — create instances then wire hooks via register().
 		( new AIGIS_CPT_Prompt() )->register( $this->loader );
+		( new AIGIS_CPT_Skill() )->register( $this->loader );
 		( new AIGIS_CPT_Policy() )->register( $this->loader );
 		( new AIGIS_CPT_Workflow() )->register( $this->loader );
 		( new AIGIS_CPT_Incident() )->register( $this->loader );
@@ -49,6 +50,7 @@ class AIGIS_Plugin {
 		// REST API controllers.
 		$this->loader->add_rest_controller( new AIGIS_REST_Log() );
 		$this->loader->add_rest_controller( new AIGIS_REST_Routing() );
+		$this->loader->add_rest_controller( new AIGIS_REST_Skills() );
 		$this->loader->add_rest_controller( new AIGIS_REST_Guardrail() );
 		$this->loader->add_rest_controller( new AIGIS_REST_Eval() );
 
