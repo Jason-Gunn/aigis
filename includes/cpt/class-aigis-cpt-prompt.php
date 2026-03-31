@@ -24,6 +24,11 @@ class AIGIS_CPT_Prompt {
 		$loader->add_filter( 'display_post_states', $this, 'display_post_states', 10, 2 );
 		$loader->add_action( 'wp_ajax_aigis_sandbox_test', $this, 'ajax_sandbox_test' );
 		$loader->add_action( 'wp_ajax_aigis_promote_prompt', $this, 'ajax_promote_prompt' );
+		$loader->add_filter( 'use_block_editor_for_post_type', $this, 'disable_block_editor', 10, 2 );
+	}
+
+	public function disable_block_editor( bool $use_block_editor, string $post_type ): bool {
+		return 'aigis_prompt' === $post_type ? false : $use_block_editor;
 	}
 
 	// -----------------------------------------------------------------------

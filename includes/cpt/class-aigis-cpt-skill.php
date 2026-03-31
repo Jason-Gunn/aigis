@@ -32,6 +32,11 @@ class AIGIS_CPT_Skill {
 		$loader->add_action( 'manage_aigis_skill_posts_custom_column', $this, 'render_admin_column', 10, 2 );
 		$loader->add_filter( 'manage_edit-aigis_skill_sortable_columns', $this, 'register_sortable_columns' );
 		$loader->add_filter( 'post_row_actions', $this, 'add_row_actions', 10, 2 );
+		$loader->add_filter( 'use_block_editor_for_post_type', $this, 'disable_block_editor', 10, 2 );
+	}
+
+	public function disable_block_editor( bool $use_block_editor, string $post_type ): bool {
+		return 'aigis_skill' === $post_type ? false : $use_block_editor;
 	}
 
 	public function register_post_type(): void {

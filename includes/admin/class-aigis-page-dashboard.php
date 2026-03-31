@@ -62,13 +62,17 @@ class AIGIS_Page_Dashboard {
 			'tokens'   => wp_list_pluck( $usage_data, 'tokens' ),
 		];
 
-		wp_localize_script( 'aigis-charts', 'aigisChartData', [
-			'usageTrend' => $chart_data,
-			'modelBreakdown' => [
-				'labels' => array_map( static fn( $r ) => $r->vendor_name . ' / ' . $r->model_name, $model_data ),
-				'tokens' => wp_list_pluck( $model_data, 'tokens' ),
-			],
-		] );
+		wp_add_inline_script(
+			'aigis-charts',
+			'var aigisChartData = ' . wp_json_encode( [
+				'usageTrend' => $chart_data,
+				'modelBreakdown' => [
+					'labels' => array_map( static fn( $r ) => $r->vendor_name . ' / ' . $r->model_name, $model_data ),
+					'tokens' => wp_list_pluck( $model_data, 'tokens' ),
+				],
+			] ) . ';',
+			'before'
+		);
 
 		include AIGIS_PLUGIN_DIR . 'admin/views/dashboard/dashboard.php';
 	}

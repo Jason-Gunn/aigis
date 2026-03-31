@@ -48,13 +48,17 @@ class AIGIS_Page_Eval {
 			'false_negative_rate' => round( $fn_rate * 100, 1 ),
 		];
 
-		wp_localize_script( 'aigis-charts', 'aigisChartData', [
-			'evalTrend' => [
-				'labels'    => wp_list_pluck( $trend_data, 'date' ),
-				'pass_rate' => array_map( static fn( $r ) => round( $r->pass_rate * 100, 1 ), $trend_data ),
-				'fail_rate' => array_map( static fn( $r ) => round( ( 1 - $r->pass_rate ) * 100, 1 ), $trend_data ),
-			],
-		] );
+		wp_add_inline_script(
+			'aigis-charts',
+			'var aigisChartData = ' . wp_json_encode( [
+				'evalTrend' => [
+					'labels'    => wp_list_pluck( $trend_data, 'date' ),
+					'pass_rate' => array_map( static fn( $r ) => round( $r->pass_rate * 100, 1 ), $trend_data ),
+					'fail_rate' => array_map( static fn( $r ) => round( ( 1 - $r->pass_rate ) * 100, 1 ), $trend_data ),
+				],
+			] ) . ';',
+			'before'
+		);
 
 		include AIGIS_PLUGIN_DIR . 'admin/views/eval/eval.php';
 	}

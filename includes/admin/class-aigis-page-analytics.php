@@ -26,22 +26,26 @@ class AIGIS_Page_Analytics {
 		$by_dept  = $db->get_cost_by_department( $days );
 		$top_prompts = $db->get_top_prompts( 10 );
 
-		wp_localize_script( 'aigis-charts', 'aigisChartData', [
-			'usageTrend' => [
-				'labels'   => wp_list_pluck( $trend, 'date' ),
-				'sessions' => wp_list_pluck( $trend, 'sessions' ),
-				'tokens'   => wp_list_pluck( $trend, 'tokens' ),
-			],
-			'modelBreakdown' => [
-				'labels' => array_map( static fn( $r ) => $r->vendor_name . ' / ' . $r->model_name, $models ),
-				'tokens' => wp_list_pluck( $models, 'tokens' ),
-				'calls'  => wp_list_pluck( $models, 'calls' ),
-			],
-			'deptCost' => [
-				'labels' => wp_list_pluck( $by_dept, 'department' ),
-				'costs'  => wp_list_pluck( $by_dept, 'cost_usd' ),
-			],
-		] );
+		wp_add_inline_script(
+			'aigis-charts',
+			'var aigisChartData = ' . wp_json_encode( [
+				'usageTrend' => [
+					'labels'   => wp_list_pluck( $trend, 'date' ),
+					'sessions' => wp_list_pluck( $trend, 'sessions' ),
+					'tokens'   => wp_list_pluck( $trend, 'tokens' ),
+				],
+				'modelBreakdown' => [
+					'labels' => array_map( static fn( $r ) => $r->vendor_name . ' / ' . $r->model_name, $models ),
+					'tokens' => wp_list_pluck( $models, 'tokens' ),
+					'calls'  => wp_list_pluck( $models, 'calls' ),
+				],
+				'deptCost' => [
+					'labels' => wp_list_pluck( $by_dept, 'department' ),
+					'costs'  => wp_list_pluck( $by_dept, 'cost_usd' ),
+				],
+			] ) . ';',
+			'before'
+		);
 
 		include AIGIS_PLUGIN_DIR . 'admin/views/analytics/analytics.php';
 	}

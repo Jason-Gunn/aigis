@@ -19,6 +19,11 @@ class AIGIS_CPT_Incident {
 		$loader->add_action( 'save_post_aigis_incident', $this, 'save_metaboxes', 10, 2 );
 		$loader->add_filter( 'display_post_states', $this, 'display_post_states', 10, 2 );
 		$loader->add_action( 'wp_ajax_aigis_set_incident_status', $this, 'ajax_set_status' );
+		$loader->add_filter( 'use_block_editor_for_post_type', $this, 'disable_block_editor', 10, 2 );
+	}
+
+	public function disable_block_editor( bool $use_block_editor, string $post_type ): bool {
+		return 'aigis_incident' === $post_type ? false : $use_block_editor;
 	}
 
 	public function register_post_type(): void {

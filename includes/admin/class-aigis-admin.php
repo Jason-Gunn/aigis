@@ -149,34 +149,38 @@ class AIGIS_Admin {
 			true
 		);
 
-		wp_localize_script( 'aigis-admin', 'aigisAdmin', [
-			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-			'nonces'  => [
-				'sandboxTest'       => wp_create_nonce( 'aigis_sandbox_test' ),
-				'promotePrompt'     => wp_create_nonce( 'aigis_promote_prompt' ),
-				'skillStatus'       => wp_create_nonce( 'aigis_change_skill_status' ),
-				'policyStatus'      => wp_create_nonce( 'aigis_policy_status' ),
-				'incidentStatus'    => wp_create_nonce( 'aigis_incident_status' ),
-				'inboxUnreadCount'  => wp_create_nonce( 'aigis_inbox_unread_count' ),
-				'generateTestData'  => wp_create_nonce( 'aigis_generate_test_data' ),
-				'purgeTestData'     => wp_create_nonce( 'aigis_purge_test_data' ),
-				'factoryReset'      => wp_create_nonce( 'aigis_factory_reset' ),
-			],
-			'i18n'    => [
-				'confirm_delete'           => __( 'Are you sure you want to delete this item?', 'ai-governance-suite' ),
-				'confirmSkillStatus'       => __( 'Change this skill status?', 'ai-governance-suite' ),
-				'skillStatusNotePrompt'    => __( 'Optional transition note:', 'ai-governance-suite' ),
-				'saving'                   => __( 'Saving…', 'ai-governance-suite' ),
-				'testing'                  => __( 'Running test…', 'ai-governance-suite' ),
-				'confirmGenerateTestData'  => __( 'Generate sample data for all sections? This will populate every section of the plugin with realistic test records.', 'ai-governance-suite' ),
-				'confirmPurgeTestData'     => __( 'Permanently delete ALL test data? This cannot be undone.', 'ai-governance-suite' ),
-				'confirmFactoryReset1'     => __( 'FACTORY RESET: This will permanently delete every record created by this plugin and cannot be undone. Continue?', 'ai-governance-suite' ),
-				'confirmFactoryReset2'     => __( 'Are you absolutely sure? Type YES to confirm.', 'ai-governance-suite' ),
-				'generating'               => __( 'Generating…', 'ai-governance-suite' ),
-				'purging'                  => __( 'Removing…', 'ai-governance-suite' ),
-				'resetting'                => __( 'Resetting…', 'ai-governance-suite' ),
-			],
-		] );
+		wp_add_inline_script(
+			'aigis-admin',
+			'var aigisAdmin = ' . wp_json_encode( [
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonces'  => [
+					'sandboxTest'       => wp_create_nonce( 'aigis_sandbox_test' ),
+					'promotePrompt'     => wp_create_nonce( 'aigis_promote_prompt' ),
+					'skillStatus'       => wp_create_nonce( 'aigis_change_skill_status' ),
+					'policyStatus'      => wp_create_nonce( 'aigis_policy_status' ),
+					'incidentStatus'    => wp_create_nonce( 'aigis_incident_status' ),
+					'inboxUnreadCount'  => wp_create_nonce( 'aigis_inbox_unread_count' ),
+					'generateTestData'  => wp_create_nonce( 'aigis_generate_test_data' ),
+					'purgeTestData'     => wp_create_nonce( 'aigis_purge_test_data' ),
+					'factoryReset'      => wp_create_nonce( 'aigis_factory_reset' ),
+				],
+				'i18n'    => [
+					'confirm_delete'           => __( 'Are you sure you want to delete this item?', 'ai-governance-suite' ),
+					'confirmSkillStatus'       => __( 'Change this skill status?', 'ai-governance-suite' ),
+					'skillStatusNotePrompt'    => __( 'Optional transition note:', 'ai-governance-suite' ),
+					'saving'                   => __( 'Saving…', 'ai-governance-suite' ),
+					'testing'                  => __( 'Running test…', 'ai-governance-suite' ),
+					'confirmGenerateTestData'  => __( 'Generate sample data for all sections? This will populate every section of the plugin with realistic test records.', 'ai-governance-suite' ),
+					'confirmPurgeTestData'     => __( 'Permanently delete ALL test data? This cannot be undone.', 'ai-governance-suite' ),
+					'confirmFactoryReset1'     => __( 'FACTORY RESET: This will permanently delete every record created by this plugin and cannot be undone. Continue?', 'ai-governance-suite' ),
+					'confirmFactoryReset2'     => __( 'Are you absolutely sure? Type YES to confirm.', 'ai-governance-suite' ),
+					'generating'               => __( 'Generating…', 'ai-governance-suite' ),
+					'purging'                  => __( 'Removing…', 'ai-governance-suite' ),
+					'resetting'                => __( 'Resetting…', 'ai-governance-suite' ),
+				],
+			] ) . ';',
+			'before'
+		);
 
 		// Chart.js — on dashboard, analytics, cost, and eval pages.
 		if ( in_array( $hook, [ 'toplevel_page_aigis-dashboard', 'ai-governance_page_aigis-analytics', 'ai-governance_page_aigis-cost', 'ai-governance_page_aigis-eval' ], true ) ) {

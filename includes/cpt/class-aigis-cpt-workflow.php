@@ -15,6 +15,11 @@ class AIGIS_CPT_Workflow {
 		$loader->add_action( 'init', $this, 'register_post_type' );
 		$loader->add_action( 'add_meta_boxes', $this, 'add_metaboxes' );
 		$loader->add_action( 'save_post_aigis_workflow', $this, 'save_metaboxes', 10, 2 );
+		$loader->add_filter( 'use_block_editor_for_post_type', $this, 'disable_block_editor', 10, 2 );
+	}
+
+	public function disable_block_editor( bool $use_block_editor, string $post_type ): bool {
+		return 'aigis_workflow' === $post_type ? false : $use_block_editor;
 	}
 
 	public function register_post_type(): void {

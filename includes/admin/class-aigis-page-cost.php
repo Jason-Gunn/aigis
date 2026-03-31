@@ -46,12 +46,16 @@ class AIGIS_Page_Cost {
 		}
 		unset( $budget );
 
-		wp_localize_script( 'aigis-charts', 'aigisChartData', [
-			'costTrend' => [
-				'labels' => wp_list_pluck( $cost_trend, 'date' ),
-				'actual' => array_map( 'floatval', wp_list_pluck( $cost_trend, 'cost_usd' ) ),
-			],
-		] );
+		wp_add_inline_script(
+			'aigis-charts',
+			'var aigisChartData = ' . wp_json_encode( [
+				'costTrend' => [
+					'labels' => wp_list_pluck( $cost_trend, 'date' ),
+					'actual' => array_map( 'floatval', wp_list_pluck( $cost_trend, 'cost_usd' ) ),
+				],
+			] ) . ';',
+			'before'
+		);
 
 		include AIGIS_PLUGIN_DIR . 'admin/views/cost/cost.php';
 	}

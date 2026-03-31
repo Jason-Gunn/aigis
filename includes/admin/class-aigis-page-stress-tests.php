@@ -50,11 +50,15 @@ class AIGIS_Page_Stress_Tests {
 			'order'          => 'ASC',
 		] );
 
-		wp_localize_script( 'aigis-admin', 'aigisStressData', [
-			'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
-			'nonce'      => wp_create_nonce( 'aigis_run_stress_test' ),
-			'variations' => array_map( static fn( $v ) => [ 'id' => $v->id, 'name' => $v->name ], $variations ),
-		] );
+		wp_add_inline_script(
+			'aigis-admin',
+			'var aigisStressData = ' . wp_json_encode( [
+				'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+				'nonce'      => wp_create_nonce( 'aigis_run_stress_test' ),
+				'variations' => array_map( static fn( $v ) => [ 'id' => $v->id, 'name' => $v->name ], $variations ),
+			] ) . ';',
+			'before'
+		);
 
 		include AIGIS_PLUGIN_DIR . 'admin/views/stress-tests/stress-tests.php';
 	}
