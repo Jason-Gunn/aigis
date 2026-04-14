@@ -24,7 +24,7 @@ $tabs = [
 	<nav class="aigis-tabs">
 		<?php foreach ( $tabs as $slug => $label ) : ?>
 			<a href="<?php echo esc_url( add_query_arg( 'tab', $slug, $base_url ) ); ?>"
-			   class="aigis-tab <?php echo $active_tab === $slug ? 'aigis-tab-active' : ''; ?>">
+			   class="<?php echo esc_attr( 'aigis-tab' . ( $active_tab === $slug ? ' aigis-tab-active' : '' ) ); ?>">
 				<?php echo esc_html( $label ); ?>
 			</a>
 		<?php endforeach; ?>
@@ -233,7 +233,7 @@ $tabs = [
 					?>
 					<tr>
 						<td><?php echo esc_html( $label ); ?></td>
-						<td style="text-align:center"><?php echo $n > 0 ? '<strong>' . $n . '</strong>' : '&mdash;'; ?></td>
+						<td style="text-align:center"><?php echo $n > 0 ? wp_kses_post( '<strong>' . $n . '</strong>' ) : esc_html__( '—', 'ai-governance-suite' ); ?></td>
 					</tr>
 					<?php endforeach; ?>
 				</tbody>

@@ -45,7 +45,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 			? round( $eval_stats->passed / $eval_stats->total * 100, 1 )
 			: 0.0;
 		?>
-		<div class="aigis-kpi-card <?php echo $_eval_pass_rate < 80 ? 'aigis-kpi-warn' : 'aigis-kpi-success'; ?>">
+		<div class="<?php echo esc_attr( 'aigis-kpi-card ' . ( $_eval_pass_rate < 80 ? 'aigis-kpi-warn' : 'aigis-kpi-success' ) ); ?>">
 			<div class="aigis-kpi-label"><?php esc_html_e( 'Eval Pass Rate', 'ai-governance-suite' ); ?></div>
 			<div class="aigis-kpi-value"><?php echo esc_html( number_format( $_eval_pass_rate, 1 ) ); ?>%</div>
 		</div>

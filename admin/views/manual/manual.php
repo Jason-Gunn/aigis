@@ -42,8 +42,8 @@ if ( ! array_key_exists( $active_tab, $tabs ) ) {
 			$url = add_query_arg( [ 'manual_tab' => $slug ] );
 			$is_active = $active_tab === $slug;
 		?>
-			<a href="<?php echo esc_url( $url ); ?>" style="display:block;padding:8px 16px;font-size:.875rem;text-decoration:none;border-left:3px solid <?php echo $is_active ? '#2271b1' : 'transparent'; ?>;color:<?php echo $is_active ? '#2271b1' : '#1d2327'; ?>;font-weight:<?php echo $is_active ? '600' : '400'; ?>;background:<?php echo $is_active ? '#f0f6fc' : 'transparent'; ?>">
-				<?php echo $label; /* translators: already escaped */ ?>
+			<a href="<?php echo esc_url( $url ); ?>" style="display:block;padding:8px 16px;font-size:.875rem;text-decoration:none;border-left:3px solid <?php echo esc_attr( $is_active ? '#2271b1' : 'transparent' ); ?>;color:<?php echo esc_attr( $is_active ? '#2271b1' : '#1d2327' ); ?>;font-weight:<?php echo esc_attr( $is_active ? '600' : '400' ); ?>;background:<?php echo esc_attr( $is_active ? '#f0f6fc' : 'transparent' ); ?>">
+				<?php echo esc_html( $label ); ?>
 			</a>
 		<?php endforeach; ?>
 	</nav>

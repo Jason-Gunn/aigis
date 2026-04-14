@@ -89,9 +89,10 @@ abstract class AIGIS_Provider_Abstract {
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Decrypt an XOR-encrypted provider API key stored in wp_options.
+	 * Decrypt an AES-256-CBC-encrypted provider API key stored in wp_options.
 	 *
-	 * Keys are encrypted with XOR(AUTH_KEY) in class-aigis-page-settings.php.
+	 * Keys are encrypted by encrypt_api_key() in class-aigis-page-settings.php
+	 * and stored with an 'aigis_aes:' prefix.
 	 */
 	protected function decrypt_option( string $option_name ): string {
 		$stored = get_option( $option_name, '' );
@@ -99,18 +100,26 @@ abstract class AIGIS_Provider_Abstract {
 			return '';
 		}
 
-		$key  = defined( 'AUTH_KEY' ) ? AUTH_KEY : 'aigis-fallback-key';
-		$raw  = base64_decode( $stored, true );
-		if ( $raw === false ) {
-			return '';
+		// AES-256-CBC format written by encrypt_api_key().
+		if ( str_starts_with( $stored, 'aigis_aes:' ) && function_exists( 'openssl_decrypt' ) ) {
+			$auth_key   = defined( 'AUTH_KEY' ) ? AUTH_KEY : '';
+			$secure_key = defined( 'SECURE_AUTH_KEY' ) ? SECURE_AUTH_KEY : '';
+			$key        = substr( hash( 'sha256', $auth_key . $secure_key, true ), 0, 32 );
+			// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_base64_decode
+			$decoded    = base64_decode( substr( $stored, 10 ), true );
+			if ( $decoded === false || strlen( $decoded ) <= 16 ) {
+				return '';
+			}
+			$iv  = substr( $decoded, 0, 16 );
+			$enc = substr( $decoded, 16 );
+			$dec = openssl_decrypt( $enc, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
+			return $dec !== false ? $dec : '';
 		}
 
-		$result = '';
-		$klen   = strlen( $key );
-		for ( $i = 0; $i < strlen( $raw ); $i++ ) {
-			$result .= $raw[ $i ] ^ $key[ $i % $klen ];
-		}
-		return $result;
+		// Legacy XOR format (aigis_enc:) was non-functional due to a key-derivation
+		// mismatch between encrypt and decrypt; keys saved under that scheme cannot
+		// be recovered and must be re-entered in Settings → Providers.
+		return '';
 	}
 
 	/**

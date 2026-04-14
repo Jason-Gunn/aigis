@@ -46,7 +46,7 @@ $tabs = [
 	<nav class="aigis-tabs">
 		<?php foreach ( $tabs as $slug => $label ) : ?>
 			<a href="<?php echo esc_url( add_query_arg( 'tab', $slug, $base_url ) ); ?>"
-			   class="aigis-tab <?php echo $active_tab === $slug ? 'aigis-tab-active' : ''; ?>">
+			   class="<?php echo esc_attr( 'aigis-tab' . ( $active_tab === $slug ? ' aigis-tab-active' : '' ) ); ?>">
 				<?php echo esc_html( $label ); ?>
 				<?php if ( $slug === 'pending' && ! empty( $stats['pending'] ) ) : ?>
 					<span style="background:#d63638;color:#fff;border-radius:10px;padding:1px 6px;font-size:.75rem;margin-left:4px;">

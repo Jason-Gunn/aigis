@@ -28,7 +28,8 @@ class AIGIS_Page_Cost {
 			$this->handle_save();
 		}
 
-		if ( ( $_GET['budget_action'] ?? '' ) === 'delete' && ! empty( $_GET['budget_id'] ) && current_user_can( AIGIS_Capabilities::MANAGE_BUDGETS ) ) {
+		$budget_action = sanitize_key( $_GET['budget_action'] ?? '' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( 'delete' === $budget_action && ! empty( $_GET['budget_id'] ) && current_user_can( AIGIS_Capabilities::MANAGE_BUDGETS ) ) {
 			$this->handle_delete();
 		}
 
@@ -71,7 +72,10 @@ class AIGIS_Page_Cost {
 		$allowed_scope_types  = [ 'global', 'department', 'project' ];
 		$allowed_period_types = [ 'monthly', 'custom' ];
 
-		$period_type = in_array( $_POST['period'] ?? '', $allowed_period_types, true ) ? sanitize_text_field( wp_unslash( $_POST['period'] ) ) : 'monthly';
+		$period_type_raw = sanitize_key( wp_unslash( $_POST['period'] ?? '' ) );
+		$scope_type_raw  = sanitize_key( wp_unslash( $_POST['scope'] ?? '' ) );
+
+		$period_type = in_array( $period_type_raw, $allowed_period_types, true ) ? $period_type_raw : 'monthly';
 		$period_start = $period_type === 'custom'
 			? current_time( 'Y-m-d' )
 			: current_time( 'Y-m-01' );
@@ -81,7 +85,7 @@ class AIGIS_Page_Cost {
 
 		$data = [
 			'label'         => sanitize_text_field( wp_unslash( $_POST['label'] ?? '' ) ),
-			'scope_type'    => in_array( $_POST['scope'] ?? '', $allowed_scope_types, true ) ? sanitize_text_field( $_POST['scope'] ) : 'global',
+			'scope_type'    => in_array( $scope_type_raw, $allowed_scope_types, true ) ? $scope_type_raw : 'global',
 			'scope_value'   => sanitize_text_field( wp_unslash( $_POST['scope_value'] ?? '' ) ),
 			'inventory_id'  => 0,
 			'period_type'   => $period_type,
@@ -106,6 +110,9 @@ class AIGIS_Page_Cost {
 
 	private function handle_delete(): void {
 		$id = absint( $_GET['budget_id'] ?? 0 );
+		if ( ! current_user_can( AIGIS_Capabilities::MANAGE_BUDGETS ) ) {
+			wp_die( esc_html__( 'Permission denied.', 'ai-governance-suite' ) );
+		}
 		if ( ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ?? '' ), 'aigis_delete_budget_' . $id ) ) {
 			wp_die( esc_html__( 'Nonce verification failed.', 'ai-governance-suite' ) );
 		}

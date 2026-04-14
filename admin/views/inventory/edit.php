@@ -35,7 +35,7 @@ $f = fn( string $key ) => ( $item[ $key ] ?? '' );
 
 	<form method="post" action="<?php echo esc_url( $form_action ); ?>">
 		<?php wp_nonce_field( 'aigis_inventory_save', 'aigis_inventory_nonce' ); ?>
-		<input type="hidden" name="aigis_inventory_action" value="<?php echo $is_edit ? 'update' : 'create'; ?>">
+		<input type="hidden" name="aigis_inventory_action" value="<?php echo esc_attr( $is_edit ? 'update' : 'create' ); ?>">
 		<?php if ( $is_edit ) : ?>
 			<input type="hidden" name="id" value="<?php echo esc_attr( $item['id'] ); ?>">
 		<?php endif; ?>

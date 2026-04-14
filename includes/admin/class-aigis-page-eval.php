@@ -26,9 +26,10 @@ class AIGIS_Page_Eval {
 			$this->handle_verdict();
 		}
 
-		$active_tab = isset( $_GET['tab'] ) && in_array( $_GET['tab'], [ 'results', 'pending', 'trends' ], true )
-			? sanitize_key( $_GET['tab'] )
-			: 'results';
+		$active_tab = sanitize_key( $_GET['tab'] ?? '' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! in_array( $active_tab, [ 'results', 'pending', 'trends' ], true ) ) {
+			$active_tab = 'results';
+		}
 
 		$days        = absint( $_GET['days'] ?? 30 );
 		$days        = in_array( $days, [ 7, 30, 90 ], true ) ? $days : 30;

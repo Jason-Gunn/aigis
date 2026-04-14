@@ -31,9 +31,10 @@ class AIGIS_Page_Settings {
 			$this->handle_save();
 		}
 
-		$active_tab = isset( $_GET['tab'] ) && array_key_exists( $_GET['tab'], self::TABS )
-			? sanitize_key( $_GET['tab'] )
-			: 'general';
+		$active_tab = sanitize_key( $_GET['tab'] ?? '' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! array_key_exists( $active_tab, self::TABS ) ) {
+			$active_tab = 'general';
+		}
 
 		include AIGIS_PLUGIN_DIR . 'admin/views/settings/settings.php';
 	}
@@ -95,12 +96,20 @@ class AIGIS_Page_Settings {
 				$key = "aigis_provider_{$provider}_{$field}";
 				if ( isset( $_POST[ $key ] ) ) {
 					$raw = wp_unslash( $_POST[ $key ] );
-					// Encrypt API keys at rest using WordPress's built-in encryption key.
-					if ( $field === 'api_key' && ! empty( $raw ) ) {
-						update_option( $key, $this->encrypt_api_key( sanitize_text_field( $raw ) ) );
-					} else {
-						update_option( $key, sanitize_text_field( $raw ) );
+					if ( 'api_key' === $field ) {
+						$raw = sanitize_text_field( $raw );
+						if ( '' === $raw ) {
+							continue;
+						}
+
+						$encrypted = $this->encrypt_api_key( $raw );
+						if ( '' !== $encrypted ) {
+							update_option( $key, $encrypted );
+						}
+						continue;
 					}
+
+					update_option( $key, sanitize_text_field( $raw ) );
 				}
 			}
 		}
@@ -134,17 +143,24 @@ class AIGIS_Page_Settings {
 	}
 
 	/**
-	 * XOR-encrypt an API key with the WordPress auth key for at-rest protection.
+	 * AES-256-CBC-encrypt an API key for at-rest protection.
 	 * Not a substitute for full secrets management, but prevents plaintext storage.
+	 *
+	 * Stored format: 'aigis_aes:<base64(iv . ciphertext)>'
 	 */
 	private function encrypt_api_key( string $raw ): string {
-		$key    = substr( AUTH_KEY . SECURE_AUTH_KEY, 0, 32 );
-		$out    = '';
-		$keylen = strlen( $key );
-		for ( $i = 0; $i < strlen( $raw ); $i++ ) {
-			$out .= chr( ord( $raw[ $i ] ) ^ ord( $key[ $i % $keylen ] ) );
+		if ( ! function_exists( 'openssl_encrypt' ) ) {
+			return '';
 		}
-		return 'aigis_enc:' . base64_encode( $out ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
+		$auth_key   = defined( 'AUTH_KEY' ) ? AUTH_KEY : '';
+		$secure_key = defined( 'SECURE_AUTH_KEY' ) ? SECURE_AUTH_KEY : '';
+		$key        = substr( hash( 'sha256', $auth_key . $secure_key, true ), 0, 32 );
+		$iv         = openssl_random_pseudo_bytes( 16 );
+		$enc        = openssl_encrypt( $raw, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv );
+		if ( $enc === false ) {
+			return '';
+		}
+		return 'aigis_aes:' . base64_encode( $iv . $enc ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions
 	}
 
 	/**

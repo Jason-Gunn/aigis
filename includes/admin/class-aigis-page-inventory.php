@@ -26,6 +26,7 @@ class AIGIS_Page_Inventory {
 		$this->handle_actions();
 
 		// Editing single item?
+		$action  = sanitize_key( $_GET['action'] ?? '' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$edit_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : absint( $_GET['edit'] ?? 0 );
 		if ( $edit_id ) {
 			$item = (array) $this->db->get( $edit_id );
@@ -38,7 +39,7 @@ class AIGIS_Page_Inventory {
 		}
 
 		// Adding new item?
-		$adding = isset( $_GET['action'] ) && in_array( $_GET['action'], [ 'new', 'add' ], true );
+		$adding = in_array( $action, [ 'new', 'add' ], true );
 		if ( $adding && current_user_can( AIGIS_Capabilities::MANAGE_AI_INVENTORY ) ) {
 			$item = null;
 			$is_edit = false;
@@ -71,7 +72,8 @@ class AIGIS_Page_Inventory {
 	}
 
 	private function handle_actions(): void {
-		if ( isset( $_GET['action'], $_GET['id'] ) && $_GET['action'] === 'delete' ) {
+		$action = sanitize_key( $_GET['action'] ?? '' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( 'delete' === $action && isset( $_GET['id'] ) ) {
 			$id = absint( $_GET['id'] );
 			if ( ! wp_verify_nonce( sanitize_key( $_GET['_wpnonce'] ?? '' ), 'aigis_delete_model_' . $id ) ) {
 				wp_die( esc_html__( 'Nonce verification failed.', 'ai-governance-suite' ) );

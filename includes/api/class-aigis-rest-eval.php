@@ -95,7 +95,7 @@ class AIGIS_REST_Eval extends AIGIS_REST_Controller {
 		$policy_id    = absint( $params['policy_id'] ?? 0 );
 		$workflow_id  = absint( $params['workflow_id'] ?? 0 );
 
-		if ( empty( $trace ) && ! is_array( $trace ) ) {
+		if ( empty( $trace ) || ! is_array( $trace ) ) {
 			return $this->error( 'aigis_trace_missing', __( 'trace payload is required.', 'ai-governance-suite' ) );
 		}
 

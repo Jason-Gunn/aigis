@@ -82,7 +82,7 @@ $base_url = admin_url( 'admin.php?page=aigis-cost' );
 		<div class="aigis-col">
 			<div class="aigis-card">
 				<h3>
-					<?php echo isset( $_GET['budget_action'] ) && $_GET['budget_action'] === 'edit'
+					<?php echo 'edit' === ( $budget_action ?? '' )
 						? esc_html__( 'Edit Budget', 'ai-governance-suite' )
 						: esc_html__( 'Add Budget', 'ai-governance-suite' ); ?>
 				</h3>
@@ -97,7 +97,7 @@ $base_url = admin_url( 'admin.php?page=aigis-cost' );
 				?>
 				<form method="post" action="<?php echo esc_url( $base_url ); ?>">
 					<?php wp_nonce_field( 'aigis_save_budget', 'aigis_budget_nonce' ); ?>
-					<input type="hidden" name="budget_action" value="<?php echo $edit_id ? 'update' : 'create'; ?>">
+					<input type="hidden" name="budget_action" value="<?php echo esc_attr( $edit_id ? 'update' : 'create' ); ?>">
 					<?php if ( $edit_id ) : ?>
 						<input type="hidden" name="budget_id" value="<?php echo esc_attr( $edit_id ); ?>">
 					<?php endif; ?>
