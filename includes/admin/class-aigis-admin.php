@@ -20,6 +20,7 @@ class AIGIS_Admin {
 
 	public function register( AIGIS_Loader $loader ): void {
 		$loader->add_action( 'admin_menu', $this, 'register_menus' );
+		$loader->add_action( 'admin_menu', $this, 'ensure_dashboard_submenu_first', 999 );
 		$loader->add_action( 'admin_enqueue_scripts', $this, 'enqueue_assets' );
 		$loader->add_action( 'admin_notices', $this, 'show_initial_api_key_notice' );
 		$loader->add_action( 'wp_ajax_aigis_inbox_unread_count',    $this, 'ajax_inbox_unread_count' );
@@ -122,6 +123,32 @@ class AIGIS_Admin {
 				$item['cb']
 			);
 		}
+	}
+
+	public function ensure_dashboard_submenu_first(): void {
+		global $submenu;
+
+		if ( empty( $submenu['aigis-dashboard'] ) || ! is_array( $submenu['aigis-dashboard'] ) ) {
+			return;
+		}
+
+		$dashboard_index = null;
+
+		foreach ( $submenu['aigis-dashboard'] as $index => $item ) {
+			if ( isset( $item[2] ) && 'aigis-dashboard' === $item[2] ) {
+				$dashboard_index = $index;
+				break;
+			}
+		}
+
+		if ( null === $dashboard_index || 0 === $dashboard_index ) {
+			return;
+		}
+
+		$dashboard_item = $submenu['aigis-dashboard'][ $dashboard_index ];
+		unset( $submenu['aigis-dashboard'][ $dashboard_index ] );
+		$submenu['aigis-dashboard'] = array_values( $submenu['aigis-dashboard'] );
+		array_unshift( $submenu['aigis-dashboard'], $dashboard_item );
 	}
 
 	// -----------------------------------------------------------------------
