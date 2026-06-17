@@ -4,7 +4,7 @@
 
 ## Overview
 
-AIGIS is a comprehensive WordPress plugin that brings enterprise-grade AI governance capabilities to any WordPress site. It gives teams the tools to **manage, audit, control, and continuously improve** how AI systems are used across their organisation, all from within the WordPress admin.
+AIGIS is a comprehensive WordPress plugin that brings enterprise-grade AI governance capabilities to any WordPress site. It gives teams the tools to **manage, audit, control, and continuously improve** how AI systems are used across their organization, all from within the WordPress admin.
 
 ### What it does
 
