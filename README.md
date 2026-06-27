@@ -84,6 +84,8 @@ ai-governance-suite/
 
 All endpoints live under `/wp-json/ai-governance/v1/` and require an `X-AIGIS-API-Key` header.
 
+For external integrations, use the plugin-managed `X-AIGIS-API-Key`. WordPress-authenticated requests (cookie or Application Password) are also supported, but only for users who already hold the specific AIGIS capability required by the endpoint. Being logged in to WordPress alone is not sufficient.
+
 | Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/log` | Log an AI usage event |

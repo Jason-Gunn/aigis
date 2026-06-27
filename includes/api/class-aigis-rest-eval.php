@@ -14,12 +14,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class AIGIS_REST_Eval extends AIGIS_REST_Controller {
 
+	public function check_eval_access( \WP_REST_Request $request ): bool|\WP_Error {
+		return $this->check_authenticated_access( $request, AIGIS_Capabilities::MANAGE_EVAL );
+	}
+
 	public function register_routes(): void {
 		register_rest_route( $this->namespace, '/eval-result', [
 			[
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'create_eval_result' ],
-				'permission_callback' => [ $this, 'check_api_key' ],
+				'permission_callback' => [ $this, 'check_eval_access' ],
 			],
 		] );
 
@@ -27,7 +31,7 @@ class AIGIS_REST_Eval extends AIGIS_REST_Controller {
 			[
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'validate_trace' ],
-				'permission_callback' => [ $this, 'check_api_key' ],
+				'permission_callback' => [ $this, 'check_eval_access' ],
 			],
 		] );
 	}

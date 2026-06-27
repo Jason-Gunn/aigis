@@ -66,16 +66,7 @@ class AIGIS_REST_Skills extends AIGIS_REST_Controller {
 	}
 
 	public function check_skills_access( \WP_REST_Request $request ): bool|\WP_Error {
-		$auth = $this->check_api_key( $request );
-		if ( is_wp_error( $auth ) ) {
-			return $auth;
-		}
-
-		if ( is_user_logged_in() && ! current_user_can( AIGIS_Capabilities::VIEW_SKILLS ) ) {
-			return $this->error( 'aigis_skill_rest_forbidden', __( 'You do not have permission to view skills.', 'ai-governance-suite' ), 403 );
-		}
-
-		return true;
+		return $this->check_authenticated_access( $request, AIGIS_Capabilities::VIEW_SKILLS );
 	}
 
 	public function get_items( $request ) {

@@ -17,6 +17,35 @@ abstract class AIGIS_REST_Controller extends \WP_REST_Controller {
 	protected $namespace = 'ai-governance/v1';
 
 	/**
+	 * Allow authenticated WordPress users only when they hold one of the
+	 * required AIGIS capabilities. External integrations may continue to use
+	 * the plugin-managed API key.
+	 *
+	 * @param \WP_REST_Request $request      Incoming request.
+	 * @param string|string[]  $capabilities Required capability or list of capabilities.
+	 * @return bool|\WP_Error
+	 */
+	protected function check_authenticated_access( \WP_REST_Request $request, string|array $capabilities ): bool|\WP_Error {
+		$capabilities = array_values( array_filter( array_map( 'strval', (array) $capabilities ) ) );
+
+		if ( is_user_logged_in() ) {
+			foreach ( $capabilities as $capability ) {
+				if ( current_user_can( $capability ) ) {
+					return true;
+				}
+			}
+
+			return new \WP_Error(
+				'aigis_rest_forbidden',
+				__( 'You do not have permission to access this endpoint.', 'ai-governance-suite' ),
+				[ 'status' => 403 ]
+			);
+		}
+
+		return $this->check_api_key( $request );
+	}
+
+	/**
 	 * Permission callback: accept requests authenticated via WordPress
 	 * Application Passwords OR the AIGIS plugin-managed API key
 	 * (sent as X-AIGIS-API-Key header).
@@ -25,12 +54,7 @@ abstract class AIGIS_REST_Controller extends \WP_REST_Controller {
 	 * @return bool|\WP_Error
 	 */
 	public function check_api_key( \WP_REST_Request $request ): bool|\WP_Error {
-		// 1. Allow authenticated WP users (Application Passwords / cookie).
-		if ( is_user_logged_in() ) {
-			return true;
-		}
-
-		// 2. Plugin-managed API key via header.
+		// Plugin-managed API key via header.
 		$provided_key = $request->get_header( 'X-AIGIS-API-Key' );
 		if ( empty( $provided_key ) ) {
 			return new \WP_Error(

@@ -13,12 +13,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class AIGIS_REST_Log extends AIGIS_REST_Controller {
 
+	public function check_log_access( \WP_REST_Request $request ): bool|\WP_Error {
+		return $this->check_authenticated_access(
+			$request,
+			[
+				AIGIS_Capabilities::USE_PROMPTS,
+				AIGIS_Capabilities::MANAGE_AI_INVENTORY,
+			]
+		);
+	}
+
 	public function register_routes(): void {
 		register_rest_route( $this->namespace, '/log', [
 			[
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'create_item' ],
-				'permission_callback' => [ $this, 'check_api_key' ],
+				'permission_callback' => [ $this, 'check_log_access' ],
 				'args'                => $this->get_endpoint_args_for_item_schema( \WP_REST_Server::CREATABLE ),
 			],
 		] );

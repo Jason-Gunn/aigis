@@ -13,12 +13,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class AIGIS_REST_Routing extends AIGIS_REST_Controller {
 
+	public function check_routing_access( \WP_REST_Request $request ): bool|\WP_Error {
+		return $this->check_authenticated_access( $request, AIGIS_Capabilities::VIEW_WORKFLOWS );
+	}
+
 	public function register_routes(): void {
 		register_rest_route( $this->namespace, '/routing/(?P<agent_id>[\w\-]+)', [
 			[
 				'methods'             => \WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_item' ],
-				'permission_callback' => [ $this, 'check_api_key' ],
+				'permission_callback' => [ $this, 'check_routing_access' ],
 				'args'                => [
 					'agent_id' => [
 						'required'          => true,
